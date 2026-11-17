@@ -1,0 +1,64 @@
+{% extends 'base/base.html' %}
+{% block title %}Accountant Dashboard | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Financial & Fees Management</h4>
+        <small class="text-muted">Student fee receipts, pending installments, and revenue ledger</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'payment_create' %}" class="btn btn-primary btn-sm rounded-pill"><i class="fa-solid fa-plus me-1"></i> Record Payment</a>
+        <a href="{% url 'installment_create' %}" class="btn btn-outline-primary btn-sm rounded-pill"><i class="fa-solid fa-plus me-1"></i> Add Installment</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card shadow-sm">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Total Revenue Collected</small>
+                <h3 class="fw-bold mb-0 mt-1 text-success">Rs. {{ total_revenue }}</h3>
+            </div>
+            <div class="kpi-icon success"><i class="fa-solid fa-wallet"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="fa-solid fa-money-bill-transfer me-2 text-primary"></i> Recent Transactions</span>
+        <a href="{% url 'payment_list' %}" class="btn btn-sm btn-link text-decoration-none p-0">View All Payments</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Txn ID</th>
+                    <th>Student</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in recent_payments %}
+                <tr>
+                    <td class="fw-semibold">{{ p.transaction_id }}</td>
+                    <td>{{ p.student.username }}</td>
+                    <td class="fw-bold text-primary">Rs. {{ p.amount }}</td>
+                    <td>{{ p.payment_type }}</td>
+                    <td>{{ p.payment_method }}</td>
+                    <td><span class="badge bg-success-subtle text-success">{{ p.payment_status }}</span></td>
+                    <td><a href="{% url 'payment_receipt' p.id %}" class="btn btn-sm btn-outline-primary rounded-pill py-0">Receipt</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-3 text-muted">No transactions recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

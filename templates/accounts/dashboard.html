@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+{% block title %}Dashboard | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card p-4 border-0 shadow-sm text-center">
+        <h4 class="fw-bold">Welcome to Smart LMS, {{ request.user.username }}!</h4>
+        <p class="text-muted">Your account is active as {{ request.user.get_role_display }}.</p>
+        <div class="d-flex justify-content-center gap-2 mt-3">
+            <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4">Visit Main Portal</a>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary rounded-pill px-4">Account Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

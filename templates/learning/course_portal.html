@@ -1,0 +1,136 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ course.course_name }} - LMS Player{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="{% url 'my_courses' %}" class="text-muted small text-decoration-none"><i class="fa-solid fa-arrow-left me-1"></i> Back to My Courses</a>
+        <h4 class="fw-bold mb-0 mt-1">{{ course.course_name }}</h4>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <div class="d-none d-md-block text-end">
+            <small class="text-muted fw-bold d-block">Course Completion</small>
+            <span class="small fw-bold text-primary">{{ completed_lessons }} of {{ total_lessons }} Lessons ({{ progress_pct }}%)</span>
+        </div>
+        <div class="progress" style="width: 140px; height: 10px;">
+            <div class="progress-bar bg-success" style="width: {{ progress_pct }}%;"></div>
+        </div>
+        <button class="btn btn-sm btn-outline-warning rounded-pill" data-bs-toggle="modal" data-bs-target="#reviewModal">
+            <i class="fa-solid fa-star me-1"></i> Review
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Content / Video Player -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-3 mb-4">
+            {% if selected_lesson %}
+                <div class="bg-dark rounded-3 overflow-hidden text-center text-white d-flex align-items-center justify-content-center mb-3" style="min-height: 400px;">
+                    {% if selected_lesson.video_url %}
+                        <iframe width="100%" height="420" src="{{ selected_lesson.video_url }}" frameborder="0" allowfullscreen></iframe>
+                    {% else %}
+                        <div class="p-5">
+                            <i class="fa-solid fa-circle-play fa-4x text-primary mb-3"></i>
+                            <h4>{{ selected_lesson.lesson_title }}</h4>
+                            <p class="text-white-50">Video lecture stream ready for viewing.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold mb-0">{{ selected_lesson.lesson_title }}</h5>
+                    <form method="POST" action="{% url 'mark_lesson_complete' selected_lesson.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm rounded-pill">
+                            <i class="fa-solid fa-check me-1"></i> Mark Lesson Completed
+                        </button>
+                    </form>
+                </div>
+                <p class="text-muted small">{{ selected_lesson.lesson_description }}</p>
+
+                <!-- Downloadable Study Materials -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-arrow-down text-primary me-2"></i> Lesson Study Materials & Notes</h6>
+                    {% for mat in selected_lesson.materials.all %}
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded-3 mb-2 small">
+                        <div><i class="fa-solid fa-file-pdf text-danger me-2"></i> {{ mat.material_title }} ({{ mat.file_type }})</div>
+                        <a href="{{ mat.file_path.url }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill py-0">Download</a>
+                    </div>
+                    {% empty %}
+                    <small class="text-muted">No supplementary download materials attached to this lesson.</small>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <h5>No lesson selected. Choose a lesson from the module sidebar.</h5>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Syllabus Modules Accordion -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-3">
+            <h6 class="fw-bold mb-3 text-secondary"><i class="fa-solid fa-list-ol me-2 text-primary"></i> Course Curriculum</h6>
+            <div class="accordion" id="lmsModules">
+                {% for mod in modules %}
+                <div class="accordion-item mb-2 border rounded overflow-hidden">
+                    <h2 class="accordion-header" id="modHeading{{ mod.id }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} py-2 px-3 fw-bold small" type="button" data-bs-toggle="collapse" data-bs-target="#modCollapse{{ mod.id }}">
+                            {{ mod.module_title }}
+                        </button>
+                    </h2>
+                    <div id="modCollapse{{ mod.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#lmsModules">
+                        <div class="list-group list-group-flush small">
+                            {% for les in mod.lessons.all %}
+                            <a href="?lesson={{ les.id }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if selected_lesson.id == les.id %}active{% endif %}">
+                                <span><i class="fa-regular fa-circle-play me-2"></i> {{ les.lesson_title }}</span>
+                                <span class="badge {% if selected_lesson.id == les.id %}bg-white text-primary{% else %}bg-secondary-subtle text-secondary{% endif %}">{{ les.duration_minutes }}m</span>
+                            </a>
+                            {% empty %}
+                            <div class="p-2 text-muted small">No lessons.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-muted small">Curriculum will be added shortly.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{% url 'add_review' course.id %}" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Leave Course Feedback</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Rating</label>
+                    <select name="rating" class="form-select">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 Stars - Excellent)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 Stars - Very Good)</option>
+                        <option value="3">⭐⭐⭐ (3 Stars - Good)</option>
+                        <option value="2">⭐⭐ (2 Stars - Average)</option>
+                        <option value="1">⭐ (1 Star - Poor)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Your Review & Comments</label>
+                    <textarea name="review" class="form-control" rows="3" required placeholder="What did you learn from this course?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary rounded-pill">Submit Review</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

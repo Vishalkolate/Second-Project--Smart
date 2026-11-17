@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+{% block title %}Course Lessons | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-video text-primary me-2"></i>Course Lessons</h4>
+        <small class="text-muted">Manage instructional lectures, video URLs, topic durations, and preview settings</small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'material_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="fa-solid fa-file-pdf me-1"></i> Manage Study Materials
+        </a>
+        <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addLessonModal">
+            <i class="fa-solid fa-plus me-1"></i> Add Lesson
+        </button>
+    </div>
+</div>
+
+<!-- Lessons Table Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-clapperboard me-2 text-primary"></i>All Lessons ({{ data.count }})</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70px;">Order</th>
+                        <th>Lesson Title</th>
+                        <th>Course & Module</th>
+                        <th>Duration</th>
+                        <th>Access</th>
+                        <th>Status</th>
+                        <th class="text-end" style="width: 130px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for les in data %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-light text-dark border fw-bold">#{{ les.sequence_number }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ les.lesson_title }}</div>
+                            {% if les.video_url %}
+                            <small class="text-muted d-block text-truncate" style="max-width: 250px;">
+                                <i class="fa-brands fa-youtube me-1 text-danger"></i>{{ les.video_url }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="small fw-semibold text-dark">{{ les.module.course.course_name }}</div>
+                            <small class="text-muted">{{ les.module.module_title }}</small>
+                        </td>
+                        <td>
+                            <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i>{{ les.duration_minutes }} mins</span>
+                        </td>
+                        <td>
+                            {% if les.is_free %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Free Preview</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">Locked</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if les.status == 'Active' %}
+                            <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-circle-check me-1"></i>Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary"><i class="fa-solid fa-circle-pause me-1"></i>Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'lesson_edit' les.id %}" class="btn btn-outline-primary" title="Edit Lesson">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" title="Delete Lesson" data-bs-toggle="modal" data-bs-target="#deleteLesModal{{ les.id }}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteLesModal{{ les.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered modal-sm">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header border-0 pb-0">
+                                            <h6 class="modal-title fw-bold text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Delete Lesson</h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body small text-muted">
+                                            Delete lesson <strong>{{ les.lesson_title }}</strong>?
+                                        </div>
+                                        <div class="modal-footer border-0 pt-0">
+                                            <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="POST" action="{% url 'lesson_delete' les.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-video fa-3x mb-3 text-secondary d-block"></i>
+                            <p class="mb-2">No lessons added yet.</p>
+                            <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addLessonModal">
+                                <i class="fa-solid fa-plus me-1"></i> Add First Lesson
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Lesson Modal -->
+<div class="modal fade" id="addLessonModal" tabindex="-1" aria-labelledby="addLessonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form method="POST" action="{% url 'lesson_save' %}" class="modal-content border-0 shadow">
+            {% csrf_token %}
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="addLessonModalLabel">
+                    <i class="fa-solid fa-plus-circle me-2"></i>Add Course Lesson
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold">Target Module <span class="text-danger">*</span></label>
+                        <select name="module" class="form-select" required>
+                            <option value="">Select Course Module</option>
+                            {% for mod in modules %}
+                            <option value="{{ mod.id }}">{{ mod.course.course_name }} &rarr; {{ mod.module_title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Sequence Number</label>
+                        <input type="number" name="sequence_number" class="form-control" value="1" min="1" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Lesson Title <span class="text-danger">*</span></label>
+                        <input type="text" name="lesson_title" class="form-control" placeholder="e.g. Setting up Virtualenv and Django Project" required>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold">Video URL (YouTube / Vimeo / MP4)</label>
+                        <input type="url" name="video_url" class="form-control" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Duration (Minutes)</label>
+                        <input type="number" name="duration_minutes" class="form-control" value="15" min="0">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center pt-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_free" id="isFreeCheck">
+                            <label class="form-check-label small fw-semibold" for="isFreeCheck">
+                                Free Preview Lesson (Available without enrollment)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Lesson Notes / Description</label>
+                        <textarea name="lesson_description" class="form-control" rows="3" placeholder="Key takeaways and code snippets covered in this lesson..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">
+                    <i class="fa-solid fa-check me-1"></i> Save Lesson
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

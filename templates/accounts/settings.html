@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+{% block title %}System Settings | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">System & Institute Settings</h4>
+        <small class="text-muted">Configure institute profile, passing rules, and attendance policies</small>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                <h5 class="fw-bold mb-3 text-primary">Institute Details</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label small fw-semibold">Institute / Organization Name</label>
+                        <input type="text" name="institute_name" class="form-control" value="{{ setting.institute_name }}" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label small fw-semibold">Tagline</label>
+                        <input type="text" name="tagline" class="form-control" value="{{ setting.tagline }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Contact Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ setting.email }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Contact Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ setting.phone }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Campus Address</label>
+                        <textarea name="address" class="form-control" rows="2">{{ setting.address }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">About Text</label>
+                        <textarea name="about_text" class="form-control" rows="3">{{ setting.about_text }}</textarea>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3 text-primary">Academic & Completion Criteria</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Min Video Completion (%)</label>
+                        <input type="number" name="min_video_completion_pct" class="form-control" value="{{ setting.min_video_completion_pct }}" min="10" max="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Min Exam Passing (%)</label>
+                        <input type="number" name="min_exam_passing_pct" class="form-control" value="{{ setting.min_exam_passing_pct }}" min="10" max="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Min Attendance Required (%)</label>
+                        <input type="number" name="min_attendance_pct" class="form-control" value="{{ setting.min_attendance_pct }}" min="10" max="100">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Save Settings
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

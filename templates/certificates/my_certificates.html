@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+{% block title %}My Verified Certificates | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-certificate text-warning me-2"></i>My Verified Certificates</h4>
+        <small class="text-muted">View, download, and share your industry-recognized credentials with live QR verification</small>
+    </div>
+    <div>
+        <a href="{% url 'verify_certificate_search' %}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill">
+            <i class="fa-solid fa-qrcode me-1"></i> Public Verification Portal
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for c in certificates %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm p-4 text-center d-flex flex-column rounded-4 bg-white position-relative overflow-hidden">
+            <div class="position-absolute top-0 end-0 m-3">
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                    <i class="fa-solid fa-shield-check me-1"></i> Verified
+                </span>
+            </div>
+
+            <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 64px; height: 64px;">
+                <i class="fa-solid fa-award fa-2x"></i>
+            </div>
+
+            <span class="badge bg-primary-subtle text-primary mb-2 align-self-center px-3 py-1 rounded-pill small">
+                {{ c.certificate_type }}
+            </span>
+
+            <h5 class="fw-bold text-dark mb-1">{{ c.target_title }}</h5>
+            <small class="text-muted font-monospace mb-2">ID: {{ c.certificate_number }}</small>
+            <div class="small text-muted mb-4"><i class="fa-regular fa-calendar-check me-1 text-success"></i> Issued on {{ c.issue_date|date:"F d, Y" }}</div>
+
+            {% if c.qr_code_image %}
+            <div class="mb-3">
+                <img src="{{ c.qr_code_image.url }}" alt="QR Code" class="rounded border p-1 shadow-xs" style="width: 80px; height: 80px;">
+            </div>
+            {% endif %}
+
+            <div class="mt-auto d-flex gap-2 pt-3 border-top">
+                <a href="{% url 'download_certificate' c.id %}" class="btn btn-primary w-50 rounded-pill btn-sm fw-semibold shadow-sm">
+                    <i class="fa-solid fa-download me-1"></i> Download PDF
+                </a>
+                <a href="{% url 'verify_certificate' c.certificate_number %}" target="_blank" class="btn btn-outline-secondary w-50 rounded-pill btn-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Verify
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="card border-0 shadow-sm p-5 rounded-4 mx-auto" style="max-width: 600px;">
+            <div class="rounded-circle bg-light text-warning d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                <i class="fa-solid fa-award fa-3x opacity-50"></i>
+            </div>
+            <h5 class="fw-bold text-dark">No Certificates Awarded Yet</h5>
+            <p class="text-muted small mb-4">Certificates of Completion and Internship Excellence are automatically unlocked once you fulfill program milestones:</p>
+            
+            <div class="text-start bg-light p-3 rounded-3 small mb-4">
+                <div class="mb-2"><i class="fa-solid fa-circle-check text-success me-2"></i> Complete at least 90% video lectures & course modules</div>
+                <div class="mb-2"><i class="fa-solid fa-circle-check text-success me-2"></i> Maintain minimum 75% verified daily attendance</div>
+                <div class="mb-2"><i class="fa-solid fa-circle-check text-success me-2"></i> Pass module examination assessments with &ge; 50% score</div>
+                <div><i class="fa-solid fa-circle-check text-success me-2"></i> Submit and receive mentor approval on your Capstone Project</div>
+            </div>
+
+            <div>
+                <a href="{% url 'my_courses' %}" class="btn btn-primary btn-sm rounded-pill px-4">Continue Learning</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

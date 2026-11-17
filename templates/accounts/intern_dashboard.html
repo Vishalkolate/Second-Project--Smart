@@ -1,0 +1,526 @@
+{% extends 'base/base.html' %}
+{% block title %}Intern Dashboard | Smart LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .intern-stat-card {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        padding: 18px 20px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .intern-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+    .stat-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 12px;
+    }
+    .stat-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    .stat-val {
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.1;
+    }
+
+    /* Shift Step Badge */
+    .shift-step-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    .shift-step-box:hover {
+        border-color: #38bdf8;
+        background-color: #f0f9ff;
+    }
+    .shift-step-time {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0284c7;
+    }
+    .shift-step-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 2px;
+    }
+
+    /* Status Pills */
+    .badge-present { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-weight: 600; }
+    .badge-late { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 600; }
+    .badge-absent { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Top Header Banner -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-4 border shadow-sm">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 small fw-semibold">
+                    <i class="fa-solid fa-briefcase me-1"></i> Corporate Internship Portal
+                </span>
+                <span class="badge bg-light text-secondary border px-2 py-1 small">
+                    <i class="fa-solid fa-people-group me-1 text-primary"></i> Batch: {{ active_enrollment.batch.batch_name|default:"Assigned" }}
+                </span>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">
+                Intern Dashboard: {{ target_user.get_full_name|default:target_user.username }}
+            </h3>
+            <p class="text-muted small mb-0">
+                {{ active_enrollment.program.program_name|default:"A2Z IT HUB Practical Industry Internship & Project Execution" }}
+            </p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'daily_work_messages' %}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1">
+                <i class="fa-solid fa-comment-dots"></i> Add Message / Work Tracker
+            </a>
+            <form method="POST" action="{% url 'quick_checkin' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1" title="Mark In-Office Attendance">
+                    <i class="fa-solid fa-right-to-bracket"></i> Punch In
+                </button>
+            </form>
+            <form method="POST" action="{% url 'quick_checkout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1" title="Shift Punch Out">
+                    <i class="fa-solid fa-right-from-bracket"></i> Punch Out
+                </button>
+            </form>
+            <a href="{% url 'submit_daily_report' %}" class="btn btn-warning text-dark btn-sm rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-file-pen me-1"></i> Submit 5:45 PM Report
+            </a>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TODAY'S SHIFT & DAILY WORK TRACKER WIDGET                      -->
+    <!-- ============================================================== -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+                <div class="bg-primary-subtle text-primary p-2 rounded-3">
+                    <i class="fa-solid fa-stopwatch fs-5"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">Today's Daily Work Messages & Shift Progress</h5>
+                    <small class="text-muted">Live desk punch times, break milestones, and checkout tracking</small>
+                </div>
+            </div>
+            <a href="{% url 'daily_work_messages' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Open Full Tracker
+            </a>
+        </div>
+
+        <div class="card-body p-4 bg-light">
+            <!-- 5 Shift Stages Grid -->
+            <div class="row g-2 mb-3">
+                <!-- Step 1: Work Start -->
+                <div class="col-md col-sm-6">
+                    <div class="shift-step-box">
+                        <div class="shift-step-label">Work Start</div>
+                        <div class="shift-step-time text-primary">
+                            {% if today_tracking.work_start_time %}
+                            <i class="fa-solid fa-circle-check text-success me-1"></i>{{ today_tracking.work_start_time|time:"H:i" }}
+                            {% else %}
+                            <span class="text-muted small">09:37</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">Desk Presence Verified</small>
+                    </div>
+                </div>
+
+                <!-- Step 2: Morning Tea -->
+                <div class="col-md col-sm-6">
+                    <div class="shift-step-box">
+                        <div class="shift-step-label">Morning Tea</div>
+                        <div class="shift-step-time">
+                            {% if today_tracking.morning_tea_start %}
+                            <span class="text-success"><i class="fa-solid fa-check me-1"></i>{{ today_tracking.morning_tea_start|time:"H:i" }}</span>
+                            {% elif today_tracking.no_morning_tea %}
+                            <span class="badge bg-secondary-subtle text-muted">Skipped</span>
+                            {% else %}
+                            <span class="text-muted small">Pending</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">11:00 AM - 11:15 AM</small>
+                    </div>
+                </div>
+
+                <!-- Step 3: Lunch Break -->
+                <div class="col-md col-sm-6">
+                    <div class="shift-step-box">
+                        <div class="shift-step-label">Lunch Break</div>
+                        <div class="shift-step-time">
+                            {% if today_tracking.lunch_start %}
+                            <span class="text-success"><i class="fa-solid fa-check me-1"></i>{{ today_tracking.lunch_start|time:"H:i" }}</span>
+                            {% else %}
+                            <span class="text-muted small">Pending</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">01:00 PM - 02:00 PM</small>
+                    </div>
+                </div>
+
+                <!-- Step 4: Evening Tea -->
+                <div class="col-md col-sm-6">
+                    <div class="shift-step-box">
+                        <div class="shift-step-label">Evening Tea</div>
+                        <div class="shift-step-time">
+                            {% if today_tracking.evening_tea_start %}
+                            <span class="text-success"><i class="fa-solid fa-check me-1"></i>{{ today_tracking.evening_tea_start|time:"H:i" }}</span>
+                            {% elif today_tracking.no_evening_tea %}
+                            <span class="badge bg-secondary-subtle text-muted">Skipped</span>
+                            {% else %}
+                            <span class="text-muted small">Pending</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">04:00 PM - 04:15 PM</small>
+                    </div>
+                </div>
+
+                <!-- Step 5: Work Stop -->
+                <div class="col-md col-sm-6">
+                    <div class="shift-step-box">
+                        <div class="shift-step-label">Work Stop</div>
+                        <div class="shift-step-time">
+                            {% if today_tracking.work_stop_time %}
+                            <span class="text-dark"><i class="fa-solid fa-circle-check text-success me-1"></i>{{ today_tracking.work_stop_time|time:"H:i" }}</span>
+                            {% else %}
+                            <span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Pending</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">06:00 PM Checkout</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Prompt -->
+            <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 border">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-primary"></i>
+                    <span class="small text-muted">Log break start, stop, desk snapshots, and comments inside Add Message tracker.</span>
+                </div>
+                <a href="{% url 'daily_work_messages' %}" class="btn btn-sm btn-primary rounded-pill px-3">
+                    <i class="fa-solid fa-play me-1"></i> Log Message Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- INTERN ATTENDANCE & PUNCTUALITY KPI ROW                        -->
+    <!-- ============================================================== -->
+    <div class="row g-3 mb-4">
+        <!-- KPI 1: Today Attendance -->
+        <div class="col-xl-3 col-md-6">
+            <div class="intern-stat-card">
+                <div>
+                    <div class="stat-icon-wrapper bg-primary-subtle text-primary">
+                        <i class="fa-solid fa-fingerprint"></i>
+                    </div>
+                    <div class="stat-label">Today's Shift Attendance</div>
+                    <div class="stat-val text-primary" style="font-size: 1.4rem;">
+                        {% if today_attendance and today_attendance.check_in %}
+                        {{ today_attendance.check_in|time:"h:i A" }}
+                        {% else %}
+                        <span class="text-muted fs-6 fst-italic">Not Punched In</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-top small text-muted d-flex justify-content-between align-items-center">
+                    <span>Checkout: {{ today_attendance.check_out|time:"h:i A"|default:"Pending" }}</span>
+                    {% if today_attendance %}
+                    <span class="badge badge-{{ today_attendance.status }} text-uppercase">{{ today_attendance.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 2: Attendance Rate -->
+        <div class="col-xl-3 col-md-6">
+            <div class="intern-stat-card">
+                <div>
+                    <div class="stat-icon-wrapper bg-success-subtle text-success">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="stat-label">Attendance Rate</div>
+                    <div class="stat-val text-dark">{{ attendance_pct }}%</div>
+                </div>
+                <div class="mt-2 pt-2 border-top">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if attendance_pct >= 85 %}bg-success{% elif attendance_pct >= 70 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" style="width: {{ attendance_pct }}%;"></div>
+                    </div>
+                    <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">Min 85% required for stipend & certificate</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 3: Present Shifts -->
+        <div class="col-xl-3 col-md-6">
+            <div class="intern-stat-card">
+                <div>
+                    <div class="stat-icon-wrapper bg-info-subtle text-info">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-label">Present Shifts</div>
+                    <div class="stat-val text-success">{{ present_days }}</div>
+                </div>
+                <div class="mt-2 pt-2 border-top small text-muted d-flex justify-content-between">
+                    <span>Completed days</span>
+                    <a href="{% url 'my_attendance' %}" class="text-primary text-decoration-none fw-semibold">History &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 4: Pending Tasks -->
+        <div class="col-xl-3 col-md-6">
+            <div class="intern-stat-card">
+                <div>
+                    <div class="stat-icon-wrapper bg-warning-subtle text-warning">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div class="stat-label">Pending Assigned Tasks</div>
+                    <div class="stat-val text-warning">{{ pending_tasks_count }}</div>
+                </div>
+                <div class="mt-2 pt-2 border-top small text-muted d-flex justify-content-between">
+                    <span>{{ completed_tasks_count }} submitted/reviewed</span>
+                    <a href="{% url 'task_list' %}" class="text-primary text-decoration-none fw-semibold">Tasks &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Corporate Schedule (Specification PDF Page 18) -->
+    <div class="card p-4 border-0 shadow-sm mb-4 rounded-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="fa-solid fa-business-time me-2 text-primary"></i> Daily Corporate Schedule (09:00 AM - 06:00 PM)
+            </h5>
+            <span class="badge bg-primary-subtle text-primary border px-2 py-1 small">A2Z IT HUB Standard Shift</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>09:00 AM</th>
+                        <th>10:00 AM</th>
+                        <th>11:00 AM</th>
+                        <th>11:15 AM</th>
+                        <th>01:00 PM</th>
+                        <th>02:00 PM</th>
+                        <th>04:00 PM</th>
+                        <th>04:15 PM</th>
+                        <th>05:45 PM</th>
+                        <th>06:00 PM</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="bg-success-subtle fw-semibold text-success">Work Start</td>
+                        <td>Daily Meeting</td>
+                        <td>Tea Break</td>
+                        <td>Work Continue</td>
+                        <td class="bg-info-subtle fw-semibold text-info">Lunch Break</td>
+                        <td>Work Continue</td>
+                        <td>Evening Tea</td>
+                        <td>Work Continue</td>
+                        <td class="bg-warning-subtle fw-bold text-dark">Report Submission</td>
+                        <td class="bg-danger-subtle fw-semibold text-danger">Work Stop</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Left Column: Tasks & Daily Reports -->
+        <div class="col-lg-7">
+            <!-- Daily Tasks Assigned -->
+            <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                    <span class="fw-bold text-dark">
+                        <i class="fa-solid fa-list-check me-2 text-primary"></i> My Assigned Tasks & Deadlines
+                    </span>
+                    <a href="{% url 'task_list' %}" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold">View All Tasks</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Task Title</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in assignments %}
+                            <tr>
+                                <td class="fw-semibold text-dark">{{ a.task.task_title }}</td>
+                                <td>{{ a.task.deadline|date:'M d, H:i' }}</td>
+                                <td>
+                                    <span class="badge {% if a.submission_status == 'Reviewed' %}bg-success{% elif a.submission_status == 'Submitted' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+                                        {{ a.submission_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'task_submit' a.id %}" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-3">
+                                        {% if a.submission_status == 'Pending' %}Submit{% else %}View{% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-muted">No pending tasks assigned right now.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Daily Reports -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
+                    <span class="fw-bold text-dark">
+                        <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> 5:45 PM Daily Reports
+                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{% url 'submit_daily_report' %}" class="btn btn-sm btn-primary rounded-pill px-3 py-1">
+                            <i class="fa-solid fa-plus me-1"></i> New Report
+                        </a>
+                        <a href="{% url 'daily_reports_list' %}" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold">View All</a>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for r in reports %}
+                    <div class="list-group-item px-4 py-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark">{{ r.report_date|date:"D, d M Y" }}</strong>
+                            {% if r.team_leader_remarks %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="fa-solid fa-check me-1"></i> Reviewed by TL
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border">Pending TL Review</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted d-block mb-1"><strong>Today's Task:</strong> {{ r.today_task }}</small>
+                        <small class="text-muted d-block"><strong>Completed Work:</strong> {{ r.completed_work|truncatewords:16 }}</small>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted small py-4">
+                        No daily reports submitted yet. Submit your daily 5:45 PM report to record your accomplishment.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Enrollment Info & Mentors -->
+        <div class="col-lg-5">
+            <!-- Internship Enrollment & Team Leader Card -->
+            <div class="card p-4 border-0 shadow-sm mb-4 rounded-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-id-card-clip me-2 text-primary"></i> Internship Enrollment
+                    </h5>
+                    <span class="badge bg-success-subtle text-success border">{{ active_enrollment.completion_status|default:"Active" }}</span>
+                </div>
+                {% if active_enrollment %}
+                <div class="bg-light p-3 rounded-3 border mb-3 small">
+                    <div class="mb-2"><strong>Program:</strong> {{ active_enrollment.program.program_name }}</div>
+                    <div class="mb-2"><strong>Batch:</strong> {{ active_enrollment.batch.batch_name|default:'Unassigned' }}</div>
+                    <div class="mb-2"><strong>Team Leader:</strong> {{ active_enrollment.batch.team_leader.get_full_name|default:active_enrollment.batch.team_leader.username|default:'Senior TL' }}</div>
+                    <div class="mb-0"><strong>Trainer:</strong> {{ active_enrollment.batch.trainer.get_full_name|default:active_enrollment.batch.trainer.username|default:'Senior Technical Trainer' }}</div>
+                </div>
+                {% else %}
+                <p class="text-muted small">You haven't been assigned to an internship batch yet. <a href="{% url 'internship_list' %}">Apply for open programs</a>.</p>
+                {% endif %}
+
+                <!-- Verification Documents -->
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <span class="small text-muted">Document Verification:</span>
+                    <span class="badge {% if verified_docs > 0 %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} border">
+                        {{ verified_docs }} Documents Verified
+                    </span>
+                </div>
+            </div>
+
+            <!-- Intern Quick Action Links -->
+            <div class="card p-4 border-0 shadow-sm rounded-4 mb-4">
+                <h6 class="fw-bold mb-3 text-dark">
+                    <i class="fa-solid fa-bolt text-warning me-2"></i> Quick Intern Operations
+                </h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'daily_work_messages' %}" class="btn btn-light border text-start py-2 px-3 rounded-3 d-flex align-items-center">
+                        <i class="fa-solid fa-comment-dots text-primary me-3 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Daily Work Messages</div>
+                            <small class="text-muted">Work start, breaks & work stop</small>
+                        </div>
+                    </a>
+                    <a href="{% url 'submit_daily_report' %}" class="btn btn-light border text-start py-2 px-3 rounded-3 d-flex align-items-center">
+                        <i class="fa-solid fa-file-pen text-warning me-3 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Submit 5:45 PM Daily Report</div>
+                            <small class="text-muted">Mandatory shift accomplishment log</small>
+                        </div>
+                    </a>
+                    <a href="{% url 'my_attendance' %}" class="btn btn-light border text-start py-2 px-3 rounded-3 d-flex align-items-center">
+                        <i class="fa-solid fa-calendar-days text-success me-3 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Check Attendance History</div>
+                            <small class="text-muted">Monthly punch records & export</small>
+                        </div>
+                    </a>
+                    <a href="{% url 'leave_apply' %}" class="btn btn-light border text-start py-2 px-3 rounded-3 d-flex align-items-center">
+                        <i class="fa-solid fa-paper-plane text-info me-3 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Request Official Leave</div>
+                            <small class="text-muted">Submit leave for HR/Admin approval</small>
+                        </div>
+                    </a>
+                    <a href="{% url 'upload_document' %}" class="btn btn-light border text-start py-2 px-3 rounded-3 d-flex align-items-center">
+                        <i class="fa-solid fa-upload text-secondary me-3 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Upload Verification Documents</div>
+                            <small class="text-muted">Aadhaar, College NOC, Resume</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

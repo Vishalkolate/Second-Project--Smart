@@ -1,0 +1,137 @@
+{% extends 'base/base.html' %}
+{% block title %}My Internship | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">My Internship Hub</h4>
+        <small class="text-muted">Track your program batch, mentor information, and document verification</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'daily_work_messages' %}" class="btn btn-info text-white btn-sm rounded-pill">
+            <i class="fa-solid fa-comment-dots me-1"></i> Daily Work Messages
+        </a>
+        <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
+            <i class="fa-solid fa-file-arrow-up me-1"></i> Upload Verification Doc
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        {% if enrollment %}
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-primary">{{ enrollment.program.technology }}</span>
+                <span class="badge bg-success">{{ enrollment.completion_status }}</span>
+            </div>
+            <h4 class="fw-bold text-dark">{{ enrollment.program.program_name }}</h4>
+            <hr>
+            <div class="row g-3 small">
+                <div class="col-6"><strong>Assigned Batch:</strong> {{ enrollment.batch.batch_name|default:'General' }}</div>
+                <div class="col-6"><strong>Team Leader:</strong> {{ enrollment.batch.team_leader.username|default:'Senior Mentor' }}</div>
+                <div class="col-6"><strong>Daily Hours:</strong> {{ enrollment.batch.start_time }} to {{ enrollment.batch.end_time }}</div>
+                <div class="col-6"><strong>Certificate Status:</strong> <span class="badge bg-light text-dark border">{{ enrollment.certificate_status }}</span></div>
+            </div>
+        </div>
+        {% elif application %}
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-2">Application In Review</h5>
+            <p class="text-muted small">You applied for <strong>{{ application.program.program_name }}</strong> on {{ application.application_date }}.</p>
+            <div><strong>Status:</strong> <span class="badge bg-warning text-dark">{{ application.selection_status }}</span></div>
+            {% if application.interview_date %}
+            <div class="mt-2 text-primary"><strong>Interview Scheduled:</strong> {{ application.interview_date }}</div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="card p-4 border-0 shadow-sm mb-4 text-center py-5">
+            <h5>You haven't applied for an internship program yet.</h5>
+            <a href="{% url 'internship_list' %}" class="btn btn-primary rounded-pill mt-2">Browse Active Internships</a>
+        </div>
+        {% endif %}
+
+        <!-- Verification Documents -->
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white fw-bold">My Verification Documents</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Document Type</th>
+                            <th>Status</th>
+                            <th>Uploaded</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in documents %}
+                        <tr>
+                            <td class="fw-semibold">{{ d.document_type }}</td>
+                            <td>
+                                {% if d.verification_status == 'Verified' %}
+                                <span class="badge bg-success">Verified</span>
+                                {% elif d.verification_status == 'Rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ d.uploaded_at|date:'Y-m-d' }}</td>
+                            <td><a href="{{ d.document_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill py-0">View</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center py-3 text-muted">No documents uploaded yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Workflow summary -->
+    <div class="col-lg-5">
+        <div class="card p-4 border-0 shadow-sm bg-light">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i> Onboarding Checklist</h5>
+            <ul class="list-unstyled small mb-0">
+                <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Submit Resume & Educational Documents</li>
+                <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Complete Technical & HR Interview</li>
+                <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Pay Security Deposit & Receive Receipt</li>
+                <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Join Assigned Slack/Teams Batch Group</li>
+                <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Daily Attendance Punch & Report at 05:45 PM</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Doc Modal -->
+<div class="modal fade" id="uploadDocModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{% url 'upload_document' %}" enctype="multipart/form-data" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Upload Verification Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Document Type</label>
+                    <select name="document_type" class="form-select">
+                        <option value="College ID Card">College ID Card</option>
+                        <option value="Degree / Marksheet">Degree / Diploma Marksheet</option>
+                        <option value="Aadhaar / National ID">Aadhaar / National ID</option>
+                        <option value="NOC / College Letter">College NOC / Recommendation Letter</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Document File (PDF / Image)</label>
+                    <input type="file" name="document_file" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary rounded-pill">Upload Document</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

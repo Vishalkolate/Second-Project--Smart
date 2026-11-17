@@ -1,0 +1,54 @@
+{% extends 'base/base.html' %}
+{% block title %}Submit Daily Work Report | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Submit Daily Work Report (05:45 PM)</h4>
+    <small class="text-muted">Document daily accomplishments, pending tasks, GitHub code repository, and tomorrow's plan</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Report Date</label>
+                        <input type="date" name="report_date" class="form-control" value="{% now 'Y-m-d' %}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">GitHub Repository URL</label>
+                        <input type="url" name="github_url" class="form-control" placeholder="https://github.com/username/project">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Today's Assigned Task</label>
+                        <input type="text" name="today_task" class="form-control" required placeholder="What was assigned during the morning meeting?">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Completed Work</label>
+                        <textarea name="completed_work" class="form-control" rows="3" required placeholder="Detail the features built, bugs fixed, or modules completed."></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Pending Work (if any)</label>
+                        <textarea name="pending_work" class="form-control" rows="2" placeholder="Tasks that need to carry forward"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Screenshot Proof (Optional)</label>
+                        <input type="file" name="screenshot" class="form-control" accept="image/*">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Tomorrow's Plan</label>
+                        <input type="text" name="tomorrow_plan" class="form-control" placeholder="Key goals for the next day">
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Submit Daily Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

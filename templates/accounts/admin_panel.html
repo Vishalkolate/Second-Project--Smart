@@ -1,0 +1,221 @@
+{% extends 'base/base.html' %}
+{% block title %}Admin Control Panel | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Administrative Control Center</h4>
+        <small class="text-muted">High-level institute operations, enrollments, internships and revenue overview</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'add_student' %}" class="btn btn-primary btn-sm rounded-pill"><i class="fa-solid fa-plus me-1"></i> Add Student</a>
+        <a href="{% url 'course_save' %}" class="btn btn-outline-primary btn-sm rounded-pill"><i class="fa-solid fa-plus me-1"></i> New Course</a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card shadow-sm">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Total Students</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ total_students }}</h3>
+            </div>
+            <div class="kpi-icon primary"><i class="fa-solid fa-user-graduate"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card shadow-sm">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Active Interns</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ active_interns }}</h3>
+            </div>
+            <div class="kpi-icon success"><i class="fa-solid fa-laptop-code"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card shadow-sm">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Active Batches</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ active_batches }}</h3>
+            </div>
+            <div class="kpi-icon warning"><i class="fa-solid fa-people-group"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-card shadow-sm">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Total Revenue</small>
+                <h3 class="fw-bold mb-0 mt-1">Rs. {{ revenue }}</h3>
+            </div>
+            <div class="kpi-icon info"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Quick Management Hub -->
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-3 text-secondary"><i class="fa-solid fa-cubes me-2 text-primary"></i> Complete System Management Modules</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{% url 'student_list' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-users fa-2x text-primary"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Students</h6>
+                                <small class="text-muted">Registration & profiles</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'course_list' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-book-open fa-2x text-success"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Courses</h6>
+                                <small class="text-muted">Modules & syllabi</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'internship_applications' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-briefcase fa-2x text-warning"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Internships</h6>
+                                <small class="text-muted">Candidates & batches</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'attendance_dashboard' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-calendar-check fa-2x text-danger"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Attendance</h6>
+                                <small class="text-muted">Roster & leave approvals</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'task_list' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-list-check fa-2x text-info"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Tasks</h6>
+                                <small class="text-muted">Assignments & review</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'exam_list' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-pen-to-square fa-2x text-purple"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Exams</h6>
+                                <small class="text-muted">Question bank & scores</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'certificate_list' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-certificate fa-2x text-warning"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Certificates</h6>
+                                <small class="text-muted">PDF & QR verification</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'payment_list' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-money-bill-transfer fa-2x text-success"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Payments</h6>
+                                <small class="text-muted">Receipts & fees</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'reports_dashboard' %}" class="card p-3 text-decoration-none card-hover border bg-light h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fa-solid fa-file-excel fa-2x text-primary"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0">Reports</h6>
+                                <small class="text-muted">Excel & CSV exports</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Audit Activities -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> Recent System Activity</span>
+                <a href="{% url 'audit_logs' %}" class="btn btn-sm btn-link text-decoration-none p-0">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Module</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in recent_activities %}
+                        <tr>
+                            <td class="text-muted">{{ a.created_at|date:'H:i (d M)' }}</td>
+                            <td class="fw-semibold">{{ a.user.username|default:'System' }}</td>
+                            <td>{{ a.action }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ a.module }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center py-3 text-muted">No recent activities.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Candidate Applications -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-plus me-2 text-primary"></i> Recent Internship Applicants</h5>
+            <div class="list-group list-group-flush">
+                {% for app in recent_applications %}
+                <div class="list-group-item px-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-dark">{{ app.student.get_full_name|default:app.student.username }}</span>
+                        <span class="badge bg-primary-subtle text-primary">{{ app.selection_status }}</span>
+                    </div>
+                    <small class="text-muted d-block">{{ app.program.program_name }}</small>
+                    <small class="text-muted">Applied: {{ app.application_date }}</small>
+                </div>
+                {% empty %}
+                <div class="text-muted small py-3">No applications submitted yet.</div>
+                {% endfor %}
+            </div>
+            <a href="{% url 'internship_applications' %}" class="btn btn-outline-primary btn-sm rounded-pill w-100 mt-3">
+                Review All Applications
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

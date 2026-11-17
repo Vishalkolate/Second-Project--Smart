@@ -1,0 +1,65 @@
+{% extends 'base/public_base.html' %}
+{% block title %}Verify Certificate | {{ site_setting.institute_name }}{% endblock %}
+
+{% block content %}
+<div class="bg-primary text-white py-5 text-center">
+    <div class="container">
+        <h1 class="fw-bold">Public Certificate Verification</h1>
+        <p class="lead text-white-50">Authenticate and verify certificates issued by {{ site_setting.institute_name }}.</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card p-4 border-0 shadow-sm mb-4">
+                <h5 class="fw-bold mb-3 text-center">Enter Certificate Number</h5>
+                <form method="GET" action="{% url 'verify_certificate_search' %}">
+                    <div class="input-group mb-3">
+                        <input type="text" name="cert_number" class="form-control" placeholder="e.g. LMS-CERT-XXXXXXXX" value="{{ certificate_number|default:'' }}" required>
+                        <button class="btn btn-primary px-4" type="submit">Verify Now</button>
+                    </div>
+                </form>
+                <div class="text-center small text-muted">
+                    <i class="fa-solid fa-qrcode me-1"></i> You can also scan the QR code printed on the physical certificate.
+                </div>
+            </div>
+
+            {% if cert %}
+            <div class="card border-success border-2 shadow-sm p-4">
+                <div class="text-center mb-3">
+                    <i class="fa-solid fa-circle-check fa-4x text-success mb-2"></i>
+                    <h4 class="fw-bold text-success mb-0">Certificate Authenticated</h4>
+                    <span class="badge bg-success-subtle text-success">Valid & Officially Issued</span>
+                </div>
+                <hr>
+                <div class="row g-2 small">
+                    <div class="col-5 text-muted">Certificate ID:</div>
+                    <div class="col-7 fw-bold">{{ cert.certificate_number }}</div>
+                    <div class="col-5 text-muted">Recipient Name:</div>
+                    <div class="col-7 fw-bold">{{ cert.recipient_name }}</div>
+                    <div class="col-5 text-muted">Program / Course:</div>
+                    <div class="col-7 fw-bold">{{ cert.target_title }}</div>
+                    <div class="col-5 text-muted">Certificate Type:</div>
+                    <div class="col-7">{{ cert.certificate_type }}</div>
+                    <div class="col-5 text-muted">Issue Date:</div>
+                    <div class="col-7">{{ cert.issue_date }}</div>
+                </div>
+                {% if cert.pdf_file %}
+                <div class="text-center mt-4">
+                    <a href="{% url 'download_certificate' cert.id %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                        <i class="fa-solid fa-download me-1"></i> Download Verified PDF
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% elif certificate_number %}
+            <div class="alert alert-danger text-center">
+                <i class="fa-solid fa-circle-xmark fa-2x mb-2 d-block"></i>
+                <strong>No certificate found</strong> with the number "{{ certificate_number }}". Please verify and try again.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

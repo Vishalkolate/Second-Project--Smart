@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+{% block title %}Edit Enrollment #{{ enrollment.id }} | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'enrollment_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Enrollments
+    </a>
+    <h4 class="fw-bold mb-1"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Update Enrollment Record</h4>
+    <small class="text-muted">Modify student course admission status and fee clearance</small>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="fw-bold mb-0 text-dark">Enrollment #{{ enrollment.id }} Information</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="p-3 bg-light rounded mb-4">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <span class="small text-muted d-block">Enrolled Student</span>
+                            <span class="fw-bold text-dark">{{ enrollment.student.get_full_name|default:enrollment.student.username }} (@{{ enrollment.student.username }})</span>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="small text-muted d-block">Target Course</span>
+                            <span class="fw-bold text-primary">{{ enrollment.course.course_name }}</span>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <span class="small text-muted">Enrolled on: {{ enrollment.enrolled_at|date:'d M Y, h:i A' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'enrollment_update' enrollment.id %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Enrollment Status <span class="text-danger">*</span></label>
+                            <select name="enrollment_status" class="form-select" required>
+                                <option value="Active" {% if enrollment.enrollment_status == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="Completed" {% if enrollment.enrollment_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                <option value="Cancelled" {% if enrollment.enrollment_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Payment Status <span class="text-danger">*</span></label>
+                            <select name="payment_status" class="form-select" required>
+                                <option value="Paid" {% if enrollment.payment_status == 'Paid' %}selected{% endif %}>Paid</option>
+                                <option value="Pending" {% if enrollment.payment_status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Free" {% if enrollment.payment_status == 'Free' %}selected{% endif %}>Free</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{% url 'enrollment_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+{% block title %}Live Exam: {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="card p-4 border-0 shadow-sm mb-4 sticky-top bg-white">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="fw-bold mb-0">{{ exam.title }}</h4>
+            <small class="text-muted">Total Questions: {{ questions.count }} | Passing: {{ exam.passing_marks }} Marks</small>
+        </div>
+        <div class="text-end">
+            <small class="text-muted fw-bold d-block">Time Remaining</small>
+            <h3 class="fw-bold text-primary mb-0" id="examTimer">--:--</h3>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{% url 'submit_exam' attempt.id %}" id="examForm">
+    {% csrf_token %}
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            {% for q in questions %}
+            <div class="card p-4 border-0 shadow-sm mb-4">
+                <div class="d-flex justify-content-between mb-3">
+                    <h5 class="fw-bold mb-0">Question {{ forloop.counter }}</h5>
+                    <span class="badge bg-light text-dark border">+{{ q.marks }} Marks {% if q.negative_marks > 0 %}| -{{ q.negative_marks }}{% endif %}</span>
+                </div>
+                <p class="fs-6 mb-3">{{ q.question_text }}</p>
+
+                <div class="options-container">
+                    {% for opt in q.options.all %}
+                    <div class="form-check p-3 border rounded-3 mb-2 bg-light">
+                        <input class="form-check-input ms-0 me-3" type="radio" name="question_{{ q.id }}" id="opt_{{ opt.id }}" value="{{ opt.id }}">
+                        <label class="form-check-label w-100" for="opt_{{ opt.id }}">
+                            {{ opt.option_text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="text-center py-4">
+                <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 fw-bold shadow">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Submit Exam
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        startExamTimer({{ exam.duration_minutes }} * 60, 'examTimer', 'examForm');
+    });
+</script>
+{% endblock %}

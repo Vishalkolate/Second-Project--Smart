@@ -1,0 +1,101 @@
+{% extends 'base/base.html' %}
+{% block title %}Trainer & Team Leader Dashboard | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Trainer / Team Leader Workspace</h4>
+        <small class="text-muted">Manage training batches, assign practical tasks, review intern submissions and daily reports</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'task_create' %}" class="btn btn-primary btn-sm rounded-pill"><i class="fa-solid fa-plus me-1"></i> Create Task</a>
+        <a href="{% url 'attendance_dashboard' %}" class="btn btn-outline-primary btn-sm rounded-pill"><i class="fa-solid fa-clipboard-user me-1"></i> Mark Attendance</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Active Batches -->
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-people-group me-2 text-primary"></i> My Active Batches</h5>
+            <div class="list-group list-group-flush">
+                {% for b in batches %}
+                <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">{{ b.batch_name }}</h6>
+                        <small class="text-muted">{{ b.program.program_name }} ({{ b.start_time }} - {{ b.end_time }})</small>
+                    </div>
+                    <span class="badge bg-success-subtle text-success">{{ b.status }}</span>
+                </div>
+                {% empty %}
+                <div class="text-muted small py-3">No active batches assigned.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks assigned -->
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i> Tasks Created By Me</h5>
+            <div class="list-group list-group-flush">
+                {% for t in tasks %}
+                <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">{{ t.task_title }}</h6>
+                        <small class="text-muted">Deadline: {{ t.deadline|date:'M d, H:i' }} | Priority: {{ t.priority }}</small>
+                    </div>
+                    <a href="{% url 'task_detail' t.id %}" class="btn btn-sm btn-outline-primary rounded-pill">Submissions</a>
+                </div>
+                {% empty %}
+                <div class="text-muted small py-3">No tasks created yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Reports awaiting feedback -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold"><i class="fa-solid fa-clock-rotate-left me-2 text-warning"></i> Daily Reports Requiring Review</span>
+                <a href="{% url 'daily_reports_list' %}" class="btn btn-sm btn-link text-decoration-none p-0">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Student</th>
+                            <th>Today's Task</th>
+                            <th>GitHub Link</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in pending_reports %}
+                        <tr>
+                            <td>{{ r.report_date }}</td>
+                            <td class="fw-semibold">{{ r.student.username }}</td>
+                            <td>{{ r.today_task|truncatewords:8 }}</td>
+                            <td>
+                                {% if r.github_url %}
+                                <a href="{{ r.github_url }}" target="_blank" class="text-decoration-none"><i class="fa-brands fa-github"></i> Repo</a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'report_feedback' r.id %}" class="btn btn-sm btn-primary rounded-pill py-0">Review</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-3 text-muted">All daily reports are up to date!</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

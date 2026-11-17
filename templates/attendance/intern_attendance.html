@@ -1,0 +1,1137 @@
+{% extends 'base/base.html' %}
+{% block title %}Intern Shift Attendance | Smart LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Body & Container Styling */
+    body {
+        background-color: #f1f5f9;
+    }
+    .att-container {
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+
+    /* TOP 5 METRIC STAT CARDS (Exact match to video frame 0) */
+    .top-metric-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 22px 24px;
+        border: 1px solid #eef2f6;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        height: 100%;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .top-metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+    }
+    .metric-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 1.25rem;
+        margin-bottom: 14px;
+    }
+    .icon-box-green  { background-color: #10b981; }
+    .icon-box-orange { background-color: #f59e0b; }
+    .icon-box-red    { background-color: #ef4444; }
+    .icon-box-blue   { background-color: #2563eb; }
+    .icon-box-cyan   { background-color: #0284c7; }
+
+    .metric-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    .metric-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1;
+        margin: 0;
+    }
+
+    /* CARDS COMMON */
+    .portal-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #eef2f6;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+    .portal-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .portal-card-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+    .month-pill-badge {
+        background-color: #f1f5f9;
+        color: #334155;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        padding: 6px 14px;
+        border-radius: 20px;
+    }
+
+    /* CALENDAR SECTION */
+    .legend-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 20px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .legend-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .dot-present { background-color: #22c55e; }
+    .dot-late    { background-color: #f59e0b; }
+    .dot-absent  { background-color: #ef4444; }
+    .dot-leave   { background-color: #3b82f6; }
+    .dot-weekly  { background-color: #94a3b8; }
+    .dot-holiday { background-color: #a855f7; }
+
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+    }
+    .cal-head {
+        text-align: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+        padding-bottom: 4px;
+    }
+    .cal-cell {
+        aspect-ratio: 1.25 / 1;
+        min-height: 52px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.92rem;
+        font-weight: 700;
+        transition: transform 0.15s ease;
+        position: relative;
+    }
+    .cal-cell:hover {
+        transform: scale(1.05);
+    }
+    .cal-cell.status-present {
+        background-color: #dcfce7;
+        color: #15803d;
+    }
+    .cal-cell.status-late {
+        background-color: #fef9c3;
+        color: #a16207;
+    }
+    .cal-cell.status-absent {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    .cal-cell.status-weekly_off {
+        background-color: #f1f5f9;
+        color: #64748b;
+    }
+    .cal-cell.status-holiday {
+        background-color: #f3e8ff;
+        color: #7e22ce;
+    }
+    .cal-cell.status-upcoming {
+        background-color: #ffffff;
+        border: 1px dashed #e2e8f0;
+        color: #94a3b8;
+    }
+    .cal-cell.cell-today {
+        border: 2px solid #00b4d8 !important;
+        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.18);
+    }
+
+    /* MONTHLY PERFORMANCE / DONUT SECTION */
+    .donut-container {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: 0 auto 20px auto;
+        border-radius: 50%;
+        {% if has_data %}
+        background: conic-gradient(
+            #10b981 0% {{ donut_stop1 }}%,
+            #f59e0b {{ donut_stop1 }}% {{ donut_stop2 }}%,
+            #ef4444 {{ donut_stop2 }}% 100%
+        );
+        {% else %}
+        background: #e2e8f0;
+        {% endif %}
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .donut-inner {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .donut-value {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.1;
+    }
+    .donut-sub {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-boxes-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 1px solid #f1f5f9;
+    }
+    .stat-box-title {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .stat-box-num {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin: 0;
+    }
+    .color-present { color: #10b981; }
+    .color-late    { color: #f59e0b; }
+    .color-leave   { color: #2563eb; }
+    .color-absent  { color: #ef4444; }
+
+    .performance-legend {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 16px;
+    }
+    .perf-footer {
+        font-size: 0.8rem;
+        color: #64748b;
+        text-align: center;
+        padding-top: 12px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    /* DAILY ATTENDANCE LOG CARDS GRID */
+    .daily-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+    @media (max-width: 1200px) {
+        .daily-cards-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+        .daily-cards-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 580px) {
+        .daily-cards-grid { grid-template-columns: 1fr; }
+    }
+
+    .log-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #edf2f7;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .log-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Header Gradients */
+    .card-banner {
+        padding: 12px 16px;
+        color: #ffffff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .banner-late {
+        background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+    }
+    .banner-weekly_off {
+        background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    }
+    .banner-absent {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    .banner-present {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .banner-holiday {
+        background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+    }
+
+    .banner-date {
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .banner-day {
+        font-size: 0.78rem;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+    .banner-pill {
+        background: rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        color: #ffffff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 14px;
+        white-space: nowrap;
+    }
+
+    .card-inner-body {
+        padding: 14px 16px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .holiday-sub-badge {
+        background: #f3e8ff;
+        color: #7e22ce;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+
+    /* 3 metrics horizontal pill container */
+    .metrics-pill-container {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 10px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 12px;
+        border: 1px solid #f1f5f9;
+    }
+    .metric-sub-col {
+        flex: 1;
+    }
+    .metric-sub-label {
+        font-size: 0.64rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+    .metric-sub-val {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .duration-success { color: #0284c7; font-weight: 800; }
+    .duration-warning { color: #d97706; font-weight: 800; }
+    .duration-zero    { color: #0284c7; }
+
+    /* Working hours progress */
+    .work-hours-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.76rem;
+        margin-bottom: 6px;
+    }
+    .work-hours-label {
+        color: #475569;
+        font-weight: 600;
+    }
+    .work-hours-val {
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .custom-prog-track {
+        height: 6px;
+        background-color: #f1f5f9;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+    .custom-prog-bar {
+        height: 100%;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    }
+
+    /* Remarks row */
+    .remark-row {
+        font-size: 0.74rem;
+        color: #475569;
+        margin-top: auto;
+        padding-top: 8px;
+        border-top: 1px dashed #e2e8f0;
+    }
+    .remark-title {
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        font-size: 0.65rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 2px;
+    }
+
+    /* FOOTER CONTROLS */
+    .log-footer-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding-top: 14px;
+        border-top: 1px solid #f1f5f9;
+    }
+    .btn-export-excel {
+        background-color: #ffffff;
+        color: #16a34a;
+        border: 1px solid #22c55e;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 5px 14px;
+        transition: all 0.15s ease;
+    }
+    .btn-export-excel:hover {
+        background-color: #22c55e;
+        color: #ffffff;
+    }
+    .btn-export-pdf {
+        background-color: #ffffff;
+        color: #dc2626;
+        border: 1px solid #f87171;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 5px 14px;
+        transition: all 0.15s ease;
+    }
+    .btn-export-pdf:hover {
+        background-color: #ef4444;
+        color: #ffffff;
+    }
+    .btn-export-print {
+        background-color: #ffffff;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 5px 14px;
+        transition: all 0.15s ease;
+    }
+    .btn-export-print:hover {
+        background-color: #334155;
+        color: #ffffff;
+    }
+
+    .brand-copyright-footer {
+        text-align: center;
+        color: #64748b;
+        font-size: 0.82rem;
+        padding: 16px 0 8px 0;
+    }
+
+    /* FLOATING APP LAUNCHER BUTTON */
+    .floating-launcher-btn {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background-color: #7c3aed;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+        cursor: pointer;
+        z-index: 1040;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .floating-launcher-btn:hover {
+        transform: scale(1.08);
+        background-color: #6d28d9;
+    }
+
+    @media print {
+        #sidebar-wrapper, .floating-launcher-btn, .btn-export-excel, .btn-export-pdf, .btn-export-print, form, .staff-switcher-bar {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="att-container">
+    <!-- Top Role / Attendance Type Switch Bar -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'student_attendance' %}{% if target_user %}?student_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                <i class="fa-solid fa-graduation-cap me-1"></i> Switch to Student Lecture Attendance &rarr;
+            </a>
+            <span class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-briefcase me-1"></i> Intern Shift Attendance
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'daily_work_messages' %}" class="btn btn-sm btn-info text-white rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-comment-dots me-1"></i> Add Message Tracker
+            </a>
+        </div>
+    </div>
+
+    <!-- STAFF / ADMIN STUDENT SELECTOR BAR + QUICK PUNCH -->
+    <div class="card border-0 shadow-sm mb-3 staff-switcher-bar" style="border-radius: 14px; background: #ffffff;">
+        <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            {% if is_staff %}
+            <form method="GET" class="d-flex align-items-center gap-2 mb-0">
+                <span class="small fw-bold text-muted text-uppercase"><i class="fa-solid fa-users me-1 text-primary"></i> View Student:</span>
+                <select name="student_id" class="form-select form-select-sm fw-semibold" style="min-width: 250px;" onchange="this.form.submit()">
+                    {% for s in all_students %}
+                    <option value="{{ s.id }}" {% if target_user.id == s.id %}selected{% endif %}>
+                        {{ s.get_full_name|default:s.username }} (@{{ s.username }}) - {{ s.role|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="year" value="{{ year }}">
+                <input type="hidden" name="month" value="{{ month }}">
+            </form>
+            {% else %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill">
+                    <i class="fa-regular fa-user me-1"></i> {{ target_user.get_full_name|default:target_user.username }}
+                </span>
+                <span class="text-muted small">Shift Requirement: 8h 00m / day</span>
+            </div>
+            {% endif %}
+
+            <!-- Action buttons: Mark Attendance, Punch In/Out, Add Message -->
+            <div class="d-flex align-items-center gap-2">
+                {% if not today_record or not today_record.check_in %}
+                <form method="POST" action="{% url 'quick_checkin' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 fw-bold">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Quick Punch In
+                    </button>
+                </form>
+                {% elif not today_record.check_out %}
+                <form method="POST" action="{% url 'quick_checkout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning text-dark btn-sm rounded-pill px-3 fw-bold">
+                        <i class="fa-solid fa-right-from-bracket me-1"></i> Quick Punch Out
+                    </button>
+                </form>
+                {% else %}
+                <span class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-circle-check me-1"></i> Today's Shift Completed
+                </span>
+                {% endif %}
+
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+                    <i class="fa-solid fa-plus me-1"></i> Mark Attendance
+                </button>
+                <a href="{% url 'daily_work_messages' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    <i class="fa-solid fa-comment-dots me-1"></i> Add Daily Message
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP ROW: 5 METRIC CARDS (Exact match to video frame 0) -->
+    <div class="row g-3 mb-4">
+        <!-- 1. PRESENT DAYS -->
+        <div class="col-6 col-md-4 col-lg">
+            <div class="top-metric-card">
+                <div class="metric-icon-box icon-box-green">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="metric-title">Present Days</div>
+                <div class="metric-value">{{ present_days }}</div>
+            </div>
+        </div>
+
+        <!-- 2. LATE DAYS -->
+        <div class="col-6 col-md-4 col-lg">
+            <div class="top-metric-card">
+                <div class="metric-icon-box icon-box-orange">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="metric-title">Late Days</div>
+                <div class="metric-value">{{ late_days }}</div>
+            </div>
+        </div>
+
+        <!-- 3. ABSENT DAYS -->
+        <div class="col-6 col-md-4 col-lg">
+            <div class="top-metric-card">
+                <div class="metric-icon-box icon-box-red">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+                <div class="metric-title">Absent Days</div>
+                <div class="metric-value">{{ absent_days }}</div>
+            </div>
+        </div>
+
+        <!-- 4. LEAVE DAYS -->
+        <div class="col-6 col-md-4 col-lg">
+            <div class="top-metric-card">
+                <div class="metric-icon-box icon-box-blue">
+                    <i class="fa-solid fa-plane-departure"></i>
+                </div>
+                <div class="metric-title">Leave Days</div>
+                <div class="metric-value">{{ leave_days }}</div>
+            </div>
+        </div>
+
+        <!-- 5. ATTENDANCE % -->
+        <div class="col-12 col-md-4 col-lg">
+            <div class="top-metric-card">
+                <div class="metric-icon-box icon-box-cyan">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="metric-title">Attendance %</div>
+                <div class="metric-value">{{ percentage }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MIDDLE ROW: MONTHLY CALENDAR + MONTHLY PERFORMANCE (Exact match to video frames 0-1) -->
+    <div class="row g-4 mb-4">
+        <!-- LEFT: MONTHLY CALENDAR -->
+        <div class="col-lg-8">
+            <div class="portal-card h-100">
+                <div class="portal-card-header">
+                    <h5 class="portal-card-title">
+                        <i class="fa-regular fa-calendar-days text-primary"></i> Monthly Calendar
+                    </h5>
+                    <span class="month-pill-badge">{{ month_name|upper }}</span>
+                </div>
+
+                <!-- Legend Bar -->
+                <div class="legend-bar">
+                    <div class="legend-item"><span class="legend-dot dot-present"></span> Present</div>
+                    <div class="legend-item"><span class="legend-dot dot-late"></span> Late</div>
+                    <div class="legend-item"><span class="legend-dot dot-absent"></span> Absent</div>
+                    <div class="legend-item"><span class="legend-dot dot-leave"></span> Leave</div>
+                    <div class="legend-item"><span class="legend-dot dot-weekly"></span> Weekly Off</div>
+                    <div class="legend-item"><span class="legend-dot dot-holiday"></span> Holiday</div>
+                </div>
+
+                <!-- 7-Column Grid -->
+                <div class="cal-grid">
+                    <div class="cal-head">SUN</div>
+                    <div class="cal-head">MON</div>
+                    <div class="cal-head">TUE</div>
+                    <div class="cal-head">WED</div>
+                    <div class="cal-head">THU</div>
+                    <div class="cal-head">FRI</div>
+                    <div class="cal-head">SAT</div>
+
+                    {% for c in calendar_days %}
+                        {% if c.is_empty %}
+                        <div class="cal-cell" style="opacity: 0;"></div>
+                        {% else %}
+                        <div class="cal-cell status-{{ c.status }} {% if c.is_today %}cell-today{% endif %}" title="{{ c.date|date:'d M Y' }} - {{ c.status|title }}">
+                            {{ c.day }}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: MONTHLY PERFORMANCE -->
+        <div class="col-lg-4">
+            <div class="portal-card h-100 d-flex flex-column">
+                <div class="portal-card-header">
+                    <h5 class="portal-card-title">
+                        <i class="fa-solid fa-gauge-high text-primary"></i> Monthly Performance
+                    </h5>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="donut-container">
+                    <div class="donut-inner">
+                        <span class="donut-value">{{ percentage }}%</span>
+                        <span class="donut-sub">Attendance</span>
+                    </div>
+                </div>
+
+                <!-- 4 Stat Boxes -->
+                <div class="stat-boxes-grid">
+                    <div class="stat-box">
+                        <div class="stat-box-title">Present</div>
+                        <div class="stat-box-num color-present">{{ present_days }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-title">Late</div>
+                        <div class="stat-box-num color-late">{{ late_days }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-title">Leave</div>
+                        <div class="stat-box-num color-leave">{{ leave_days }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-title">Absent</div>
+                        <div class="stat-box-num color-absent">{{ absent_days }}</div>
+                    </div>
+                </div>
+
+                <!-- Legend dots -->
+                <div class="performance-legend">
+                    <span class="legend-item"><span class="legend-dot dot-present"></span> Present</span>
+                    <span class="legend-item"><span class="legend-dot dot-late"></span> Late</span>
+                    <span class="legend-item"><span class="legend-dot dot-absent"></span> Absent</span>
+                    <span class="legend-item"><span class="legend-dot dot-leave"></span> Leave</span>
+                </div>
+
+                <!-- Footer with user full name -->
+                <div class="perf-footer mt-auto">
+                    <i class="fa-regular fa-user me-1 text-primary"></i>
+                    <strong>{{ target_user.get_full_name|default:target_user.username }}</strong> &middot; Required shift 8h 00m/day
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM SECTION: DAILY ATTENDANCE LOG (Exact match to video frames 2-5) -->
+    <div class="portal-card">
+        <div class="portal-card-header flex-wrap gap-2">
+            <div>
+                <h5 class="portal-card-title">
+                    <i class="fa-solid fa-id-card text-primary"></i> Daily Attendance Log
+                </h5>
+                <small class="text-muted">Till 16 Nov 2026 &middot; {{ log_count }} day(s)</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+                    <i class="fa-solid fa-plus me-1"></i> Mark Attendance
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#applyLeaveModal">
+                    <i class="fa-solid fa-paper-plane me-1"></i> Apply Leave
+                </button>
+            </div>
+        </div>
+
+        {% if daily_logs %}
+        <!-- 4-Column Cards Grid -->
+        <div class="daily-cards-grid" id="dailyCardsContainer">
+            {% for log in daily_logs %}
+            <div class="log-card log-entry-card" data-search-text="{{ log.date_str }} {{ log.day_name }} {{ log.status_label }} {{ log.remarks }}">
+                <!-- Banner Header -->
+                <div class="card-banner banner-{{ log.status }}">
+                    <div>
+                        <div class="banner-date">{{ log.date_str }}</div>
+                        <div class="banner-day">{{ log.day_name }}</div>
+                    </div>
+                    <div class="banner-pill">
+                        {% if log.status == 'weekly_off' %}
+                        <i class="fa-solid fa-mug-hot me-1"></i> Weekly Off
+                        {% elif log.status == 'holiday' %}
+                        <i class="fa-solid fa-umbrella-beach me-1"></i> National Holiday
+                        {% elif log.status == 'present' %}
+                        <i class="fa-solid fa-check me-1"></i> Present
+                        {% elif log.status == 'late' %}
+                        <i class="fa-regular fa-clock me-1"></i> Late
+                        {% elif log.status == 'absent' %}
+                        <i class="fa-solid fa-xmark me-1"></i> Absent
+                        {% else %}
+                        {{ log.status_label }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="card-inner-body">
+                    {% if log.is_holiday %}
+                    <div class="holiday-sub-badge">
+                        <i class="fa-solid fa-umbrella-beach me-1"></i> Diwali Holiday
+                    </div>
+                    {% endif %}
+
+                    <!-- 3 Sub Columns: CHECK IN | CHECK OUT | TOTAL DURATION -->
+                    <div class="metrics-pill-container">
+                        <div class="metric-sub-col border-end pe-2">
+                            <div class="metric-sub-label">
+                                <span class="legend-dot dot-present" style="width:6px;height:6px;"></span> Check In
+                            </div>
+                            <div class="metric-sub-val">{{ log.check_in }}</div>
+                        </div>
+                        <div class="metric-sub-col border-end px-2">
+                            <div class="metric-sub-label">
+                                <span class="legend-dot dot-absent" style="width:6px;height:6px;"></span> Check Out
+                            </div>
+                            <div class="metric-sub-val">{{ log.check_out }}</div>
+                        </div>
+                        <div class="metric-sub-col ps-2">
+                            <div class="metric-sub-label">
+                                <span class="legend-dot dot-leave" style="width:6px;height:6px;"></span> Total Duration
+                            </div>
+                            <div class="metric-sub-val {{ log.duration_class }}">{{ log.duration }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Working Hours Progress -->
+                    <div class="work-hours-row">
+                        <span class="work-hours-label">Working Hours</span>
+                        <span class="work-hours-val">{{ log.working_hours_label }}</span>
+                    </div>
+                    <div class="custom-prog-track">
+                        <div class="custom-prog-bar" style="width: {{ log.progress_pct }}%;"></div>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="remark-row">
+                        <div class="remark-title">
+                            <i class="fa-regular fa-pen-to-square"></i> Remark
+                        </div>
+                        <div>{{ log.remarks }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Footer Control Bar (Show entries, search, Excel, PDF, Print, Pagination) -->
+        <div class="log-footer-bar">
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted fw-semibold">Show</span>
+                <select id="entriesSelect" class="form-select form-select-sm" style="width: 75px;" onchange="updateEntriesPerPage()">
+                    <option value="10" selected>10</option>
+                    <option value="16">16</option>
+                    <option value="25">25</option>
+                    <option value="all">All</option>
+                </select>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-md-center" style="max-width: 320px;">
+                <input type="text" id="recordSearchInput" class="form-control form-control-sm rounded-pill" placeholder="Search records..." onkeyup="filterDailyRecords()">
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'export_attendance_excel' %}?year={{ year }}&month={{ month }}" class="btn btn-export-excel btn-sm">
+                    <i class="fa-regular fa-file-excel me-1"></i> Excel
+                </a>
+                <button type="button" class="btn btn-export-pdf btn-sm" onclick="window.print()">
+                    <i class="fa-regular fa-file-pdf me-1"></i> PDF
+                </button>
+                <button type="button" class="btn btn-export-print btn-sm" onclick="window.print()">
+                    <i class="fa-solid fa-print me-1"></i> Print
+                </button>
+            </div>
+        </div>
+
+        <!-- Pagination & Entries summary -->
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 text-muted small">
+            <div id="entriesCountInfo">Showing 1 to 10 of {{ log_count }} entries</div>
+            <nav aria-label="Table pagination">
+                <ul class="pagination pagination-sm mb-0 gap-1">
+                    <li class="page-item"><button class="page-link rounded" onclick="changePage(1)">&lt;</button></li>
+                    <li class="page-item active" id="pageBtn1"><button class="page-link rounded" onclick="changePage(1)">1</button></li>
+                    <li class="page-item" id="pageBtn2"><button class="page-link rounded" onclick="changePage(2)">2</button></li>
+                    <li class="page-item"><button class="page-link rounded" onclick="changePage(2)">&gt;</button></li>
+                </ul>
+            </nav>
+        </div>
+        {% else %}
+        <!-- Clean Empty State (When no data has been added yet) -->
+        <div class="card border-0 p-5 text-center my-3" style="border-radius: 16px; background: #f8fafc; border: 1px dashed #cbd5e1 !important;">
+            <i class="fa-regular fa-calendar-xmark text-muted fa-3x mb-3"></i>
+            <h5 class="fw-bold text-dark">No Attendance Records Logged Yet</h5>
+            <p class="text-muted small mb-3">Use the "Mark Attendance" button below or "Quick Punch In" at the top to record attendance for {{ month_name }}.</p>
+            <div>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+                    <i class="fa-solid fa-plus me-1"></i> Mark Attendance Now
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer Copyright Branding (matching video) -->
+    <div class="brand-copyright-footer">
+        2026 &copy; by <a href="https://a2zinfotechs.com" target="_blank" class="text-decoration-none text-primary fw-semibold">a2zinfotechs.com</a>
+    </div>
+</div>
+
+<!-- FLOATING PURPLE GRID LAUNCHER BUTTON (matching video bottom right icon) -->
+<a href="{% url 'daily_work_messages' %}" class="floating-launcher-btn" title="Open Daily Work Messages & Time Tracker">
+    <i class="fa-solid fa-table-cells"></i>
+</a>
+
+<!-- MODAL: MARK / ADD ATTENDANCE (Functional for Adding New Data) -->
+<div class="modal fade" id="markAttendanceModal" tabindex="-1" aria-labelledby="markAttendanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="markAttendanceModalLabel">
+                    <i class="fa-solid fa-calendar-plus me-2"></i> Mark / Add Attendance
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'mark_attendance' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    {% if is_staff %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Select Student <span class="text-danger">*</span></label>
+                        <select name="student" class="form-select form-select-sm" required>
+                            {% for s in all_students %}
+                            <option value="{{ s.id }}" {% if target_user.id == s.id %}selected{% endif %}>
+                                {{ s.get_full_name|default:s.username }} (@{{ s.username }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <input type="hidden" name="student" value="{{ request.user.id }}">
+                    {% endif %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Attendance Date <span class="text-danger">*</span></label>
+                            <input type="date" name="attendance_date" class="form-control form-control-sm" required value="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Status <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select form-select-sm" required>
+                                <option value="present" selected>Present</option>
+                                <option value="late">Late</option>
+                                <option value="absent">Absent</option>
+                                <option value="half_day">Half Day</option>
+                                <option value="leave">Leave</option>
+                                <option value="weekly_off">Weekly Off</option>
+                                <option value="holiday">Holiday</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Check-In Time</label>
+                            <input type="time" name="check_in" class="form-control form-control-sm" value="09:00">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Check-Out Time</label>
+                            <input type="time" name="check_out" class="form-control form-control-sm" value="18:00">
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Remarks (Optional)</label>
+                        <input type="text" name="remarks" class="form-control form-control-sm" placeholder="e.g. Present & Completed Shift">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm px-4">
+                        <i class="fa-solid fa-check me-1"></i> Save Attendance
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: APPLY FOR LEAVE -->
+<div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-labelledby="applyLeaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="applyLeaveModalLabel">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Submit Leave Application
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'leave_apply' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">From Date <span class="text-danger">*</span></label>
+                            <input type="date" name="from_date" class="form-control" required value="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">To Date <span class="text-danger">*</span></label>
+                            <input type="date" name="to_date" class="form-control" required value="{{ today|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Reason for Leave <span class="text-danger">*</span></label>
+                        <textarea name="leave_reason" class="form-control" rows="3" placeholder="Enter reason (medical, exam, emergency)..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPage = 1;
+    let entriesPerPage = 10;
+
+    function renderPagination() {
+        const cards = document.querySelectorAll('.log-entry-card');
+        if (!cards.length) return;
+        const visibleCards = [];
+        cards.forEach(card => {
+            if (card.dataset.hiddenBySearch !== 'true') {
+                visibleCards.push(card);
+            }
+        });
+
+        const totalVisible = visibleCards.length;
+        const totalPages = entriesPerPage === 'all' ? 1 : Math.ceil(totalVisible / entriesPerPage);
+
+        visibleCards.forEach((card, index) => {
+            if (entriesPerPage === 'all') {
+                card.style.display = 'flex';
+            } else {
+                const start = (currentPage - 1) * entriesPerPage;
+                const end = start + entriesPerPage;
+                if (index >= start && index < end) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+
+        const startIdx = totalVisible === 0 ? 0 : (currentPage - 1) * entriesPerPage + 1;
+        const endIdx = entriesPerPage === 'all' ? totalVisible : Math.min(currentPage * entriesPerPage, totalVisible);
+        const countInfo = document.getElementById('entriesCountInfo');
+        if (countInfo) {
+            countInfo.textContent = `Showing ${startIdx} to ${endIdx} of ${totalVisible} entries`;
+        }
+
+        const p1 = document.getElementById('pageBtn1');
+        const p2 = document.getElementById('pageBtn2');
+        if (p1) p1.classList.toggle('active', currentPage === 1);
+        if (p2) {
+            p2.style.display = totalPages > 1 ? 'inline-block' : 'none';
+            p2.classList.toggle('active', currentPage === 2);
+        }
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        renderPagination();
+    }
+
+    function updateEntriesPerPage() {
+        const val = document.getElementById('entriesSelect').value;
+        entriesPerPage = val === 'all' ? 'all' : parseInt(val);
+        currentPage = 1;
+        renderPagination();
+    }
+
+    function filterDailyRecords() {
+        const query = document.getElementById('recordSearchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.log-entry-card');
+
+        cards.forEach(card => {
+            const text = (card.getAttribute('data-search-text') || '').toLowerCase();
+            if (text.includes(query)) {
+                card.dataset.hiddenBySearch = 'false';
+            } else {
+                card.dataset.hiddenBySearch = 'true';
+            }
+        });
+
+        currentPage = 1;
+        renderPagination();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        renderPagination();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base/base.html' %}
+{% block title %}Evaluate Mock Interview | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Evaluate Mock Interview: {{ interview.student.username }}</h4>
+    <small class="text-muted">Interviewer: {{ interview.interviewer.username }} | Date: {{ interview.interview_date }}</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Marks (Out of 100)</label>
+                    <input type="number" step="0.5" name="marks" class="form-control" value="{{ interview.marks|default:'' }}" required min="0" max="100">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Strengths & Improvement Areas Feedback</label>
+                    <textarea name="feedback" class="form-control" rows="4" required>{{ interview.feedback }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-success px-4 rounded-pill">Save Evaluation</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

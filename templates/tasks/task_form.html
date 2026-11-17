@@ -1,0 +1,60 @@
+{% extends 'base/base.html' %}
+{% block title %}Create Daily Task | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Create Practical Task</h4>
+    <small class="text-muted">Define task scope, assign target batch, set deadlines and marks</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Task Title</label>
+                        <input type="text" name="task_title" class="form-control" required placeholder="e.g. Build Django REST API for Product Catalog">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Assign to Batch</label>
+                        <select name="batch" class="form-select">
+                            <option value="">All Active Interns</option>
+                            {% for b in batches %}
+                            <option value="{{ b.id }}">{{ b.batch_name }} ({{ b.program.program_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Submission Deadline</label>
+                        <input type="datetime-local" name="deadline" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Total Marks</label>
+                        <input type="number" name="marks" class="form-control" value="100" min="10" max="500">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Detailed Description & Requirements</label>
+                        <textarea name="task_description" class="form-control" rows="5" required placeholder="Specify step-by-step instructions, expected outputs, and submission criteria."></textarea>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                            <i class="fa-solid fa-plus me-1"></i> Publish & Assign Task
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

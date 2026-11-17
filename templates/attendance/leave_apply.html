@@ -1,0 +1,36 @@
+{% extends 'base/base.html' %}
+{% block title %}Apply for Leave | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Submit Leave Application</h4>
+    <small class="text-muted">Request official leave approval from institute mentors</small>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">From Date</label>
+                        <input type="date" name="from_date" class="form-control" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">To Date</label>
+                        <input type="date" name="to_date" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Reason for Leave</label>
+                        <textarea name="leave_reason" class="form-control" rows="4" required placeholder="State reason for absence"></textarea>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Submit Application</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

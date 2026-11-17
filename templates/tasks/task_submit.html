@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+{% block title %}Submit Task | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Submit Task Solution</h4>
+    <small class="text-muted">{{ assignment.task.task_title }} (Deadline: {{ assignment.task.deadline }})</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">GitHub Repository URL</label>
+                    <input type="url" name="github_url" class="form-control" placeholder="https://github.com/username/repository">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Attachment File (ZIP, PDF, DOCX)</label>
+                    <input type="file" name="attachment" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Submission Notes & Summary</label>
+                    <textarea name="submission_text" class="form-control" rows="4" placeholder="Explain the key features implemented and test cases covered."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary px-4 rounded-pill">Upload Submission</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

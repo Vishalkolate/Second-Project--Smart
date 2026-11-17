@@ -1,0 +1,52 @@
+{% extends 'base/base.html' %}
+{% block title %}Grade Submission | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Grade Submission: {{ assignment.student.username }}</h4>
+    <small class="text-muted">Task: {{ assignment.task.task_title }}</small>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-3">Submissions History</h5>
+            {% for s in submissions %}
+            <div class="border rounded p-3 mb-2 bg-light small">
+                <div class="d-flex justify-content-between mb-1">
+                    <strong>Version {{ s.version_number }}</strong>
+                    <span class="text-muted">{{ s.submitted_at }}</span>
+                </div>
+                {% if s.github_url %}
+                <div><i class="fa-brands fa-github me-1"></i> <a href="{{ s.github_url }}" target="_blank">View GitHub Repository</a></div>
+                {% endif %}
+                {% if s.attachment %}
+                <div><i class="fa-solid fa-paperclip me-1"></i> <a href="{{ s.attachment.url }}" target="_blank">Download Attachment</a></div>
+                {% endif %}
+                <div class="mt-2 text-muted">{{ s.submission_text }}</div>
+            </div>
+            {% empty %}
+            <p class="text-muted small">No submissions uploaded yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-3">Evaluation & Marks</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Marks Obtained (Out of {{ assignment.task.marks }})</label>
+                    <input type="number" step="0.5" name="obtained_marks" class="form-control" value="{{ assignment.obtained_marks|default:'' }}" required min="0" max="{{ assignment.task.marks }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Trainer Feedback & Remarks</label>
+                    <textarea name="feedback" class="form-control" rows="4" placeholder="Constructive feedback for the student">{{ assignment.feedback }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-success px-4 rounded-pill">Save Grade & Feedback</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

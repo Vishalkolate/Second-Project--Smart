@@ -1,0 +1,98 @@
+{% extends 'base/base.html' %}
+{% block title %}Edit Course - {{ course.course_name }} | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'course_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Courses
+    </a>
+    <h4 class="fw-bold mb-1"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Course</h4>
+    <small class="text-muted">Update course curriculum details, instructor assignment, and status</small>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="fw-bold mb-0 text-dark">Course Details: {{ course.course_name }}</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% url 'course_update' course.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label small fw-semibold">Course Title <span class="text-danger">*</span></label>
+                            <input type="text" name="course_name" class="form-control" value="{{ course.course_name }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                <option value="">Select Category</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if course.category_id == cat.id %}selected{% endif %}>{{ cat.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Course Description <span class="text-danger">*</span></label>
+                            <textarea name="course_description" class="form-control" rows="4" required>{{ course.course_description }}</textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Instructor / Trainer</label>
+                            <select name="instructor" class="form-select">
+                                <option value="">Assign Instructor</option>
+                                {% for inst in instructors %}
+                                <option value="{{ inst.id }}" {% if course.instructor_id == inst.id %}selected{% endif %}>
+                                    {{ inst.get_full_name|default:inst.username }} ({{ inst.get_role_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Duration <span class="text-danger">*</span></label>
+                            <input type="text" name="course_duration" class="form-control" value="{{ course.course_duration }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Course Fees (₹) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="course_fees" class="form-control" value="{{ course.course_fees }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Difficulty Level</label>
+                            <select name="level" class="form-select">
+                                <option value="Beginner" {% if course.level == 'Beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="Intermediate" {% if course.level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="Advanced" {% if course.level == 'Advanced' %}selected{% endif %}>Advanced</option>
+                                <option value="All Levels" {% if course.level == 'All Levels' %}selected{% endif %}>All Levels</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select name="course_status" class="form-select">
+                                <option value="Active" {% if course.course_status == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="Inactive" {% if course.course_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Update Thumbnail</label>
+                            <input type="file" name="thumbnail" class="form-control" accept="image/*">
+                            {% if course.thumbnail %}
+                            <div class="small text-muted mt-1 d-flex align-items-center gap-2">
+                                <img src="{{ course.thumbnail.url }}" alt="thumb" class="rounded" style="width: 32px; height: 24px; object-fit: cover;">
+                                <span>Current: {{ course.thumbnail.name|truncatechars:20 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{% url 'course_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

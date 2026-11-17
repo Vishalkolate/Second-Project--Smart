@@ -1,0 +1,62 @@
+{% extends 'base/base.html' %}
+{% block title %}My Fee Statement | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">My Fees & Payments</h4>
+    <small class="text-muted">Review payments made, download receipts, and check installment schedules</small>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm overflow-hidden mb-4">
+            <div class="card-header bg-white fw-bold">My Payment History</div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Txn ID</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            <th>Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments %}
+                        <tr>
+                            <td class="fw-semibold">{{ p.transaction_id }}</td>
+                            <td class="fw-bold text-success">Rs. {{ p.amount }}</td>
+                            <td>{{ p.payment_type }}</td>
+                            <td>{{ p.payment_method }}</td>
+                            <td>{{ p.payment_date|date:'Y-m-d' }}</td>
+                            <td><a href="{% url 'payment_receipt' p.id %}" class="btn btn-sm btn-outline-primary rounded-pill py-0">Receipt</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center py-3 text-muted">No payments recorded.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-3">Installment Dues</h5>
+            {% for i in installments %}
+            <div class="border rounded p-3 mb-2 bg-light small">
+                <div class="d-flex justify-content-between">
+                    <strong>Due: Rs. {{ i.remaining_amount }}</strong>
+                    <span class="badge bg-secondary">{{ i.status }}</span>
+                </div>
+                <div class="text-muted mt-1">Due Date: {{ i.due_date }}</div>
+            </div>
+            {% empty %}
+            <small class="text-muted">No pending fee installments.</small>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

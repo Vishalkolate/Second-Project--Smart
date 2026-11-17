@@ -1,0 +1,193 @@
+{% extends 'base/public_base.html' %}
+{% load static %}
+
+{% block title %}Home | {{ site_setting.institute_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center text-md-start">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-3 text-uppercase fw-bold letter-spacing-1">
+                    <i class="fa-solid fa-bolt me-1 text-warning"></i> Next-Gen Learning & Internship Portal
+                </span>
+                <h1 class="display-4 fw-extrabold text-white mb-3" style="line-height: 1.15;">
+                    Accelerate Your Tech Career With Real-World Experience
+                </h1>
+                <p class="lead text-white-50 mb-4" style="max-width: 620px;">
+                    {{ site_setting.tagline }}. Learn from top software trainers, work on live projects, track daily tasks, and secure certified placements.
+                </p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+                    <a href="{% url 'course_list' %}" class="btn btn-primary btn-lg px-4 rounded-pill shadow">
+                        <i class="fa-solid fa-book-open me-2"></i> Explore Courses
+                    </a>
+                    <a href="{% url 'internship_list' %}" class="btn btn-outline-light btn-lg px-4 rounded-pill">
+                        <i class="fa-solid fa-briefcase me-2"></i> Apply for Internship
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center">
+                <div class="card bg-white text-dark shadow-lg border-0 p-4 rounded-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="fw-bold text-secondary mb-0">System Live Overview</h6>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                    </div>
+                    <div class="row g-3 text-start">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="text-primary fw-bold fs-3">{{ stats.total_courses }}</div>
+                                <div class="small text-muted">Active Courses</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="text-success fw-bold fs-3">{{ stats.total_students }}</div>
+                                <div class="small text-muted">Enrolled Students</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="text-warning fw-bold fs-3">{{ stats.total_internships }}</div>
+                                <div class="small text-muted">Internship Programs</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="text-info fw-bold fs-3">{{ stats.total_batches }}</div>
+                                <div class="small text-muted">Training Batches</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <a href="{% url 'register' %}" class="btn btn-warning fw-bold w-100 rounded-pill">
+                        Join Smart LMS Today <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Highlights Grid -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase">Why Choose Smart LMS</h6>
+            <h2 class="fw-bold">Complete Ecosystem For Student Career Success</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                    <div class="kpi-icon primary mx-auto mb-3"><i class="fa-solid fa-chalkboard-user"></i></div>
+                    <h5 class="fw-bold">Modular Learning</h5>
+                    <p class="text-muted small">Chapter-wise video lessons, downloadable study PDFs, and lesson completion tracking.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                    <div class="kpi-icon success mx-auto mb-3"><i class="fa-solid fa-laptop-code"></i></div>
+                    <h5 class="fw-bold">Industry Internships</h5>
+                    <p class="text-muted small">Structured 90-day internship tracks, daily task submissions, and GitHub code reviews.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                    <div class="kpi-icon warning mx-auto mb-3"><i class="fa-solid fa-clock"></i></div>
+                    <h5 class="fw-bold">Daily Tracking</h5>
+                    <p class="text-muted small">Daily attendance check-in/out, daily work reports, and automated leaves approval.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                    <div class="kpi-icon purple mx-auto mb-3"><i class="fa-solid fa-certificate"></i></div>
+                    <h5 class="fw-bold">QR Verified Certificates</h5>
+                    <p class="text-muted small">Automated PDF certificates with tamper-proof QR code public verification.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Courses -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h6 class="text-primary fw-bold text-uppercase mb-1">Top Programs</h6>
+                <h2 class="fw-bold mb-0">Featured Courses</h2>
+            </div>
+            <a href="{% url 'course_list' %}" class="btn btn-outline-primary rounded-pill">View All Courses <i class="fa-solid fa-arrow-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for c in courses %}
+            <div class="col-md-4">
+                <div class="card h-100 card-hover overflow-hidden border-0 shadow-sm rounded-4 d-flex flex-column">
+                    <div class="position-relative overflow-hidden" style="height: 180px; background-color: #f1f5f9;">
+                        {% if c.thumbnail %}
+                        <img src="{{ c.thumbnail.url }}" alt="{{ c.course_name }}" class="w-100 h-100" style="object-fit: cover;">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-primary bg-primary-subtle">
+                            <i class="fa-solid fa-laptop-code fa-3x mb-2 text-primary opacity-75"></i>
+                            <span class="small fw-semibold text-muted">{{ c.category.category_name|default:'Software Development' }}</span>
+                        </div>
+                        {% endif %}
+                        <span class="position-absolute top-0 end-0 m-3 badge bg-primary text-white shadow-sm">
+                            {{ c.level }}
+                        </span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-secondary-subtle text-secondary">{{ c.category.category_name|default:'General' }}</span>
+                            <span class="fw-bold text-success fs-5">₹{{ c.course_fees }}</span>
+                        </div>
+                        <h5 class="fw-bold text-dark mb-2">{{ c.course_name }}</h5>
+                        <p class="text-muted small flex-grow-1">{{ c.course_description|truncatewords:18 }}</p>
+                        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3">
+                            <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i> {{ c.course_duration }}</span>
+                            <a href="{% url 'course_detail' c.id %}" class="btn btn-sm btn-primary rounded-pill px-3">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4 text-muted">No courses published yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Internship Programs -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h6 class="text-primary fw-bold text-uppercase mb-1">Practical Exposure</h6>
+                <h2 class="fw-bold mb-0">Active Internship Openings</h2>
+            </div>
+            <a href="{% url 'internship_list' %}" class="btn btn-outline-primary rounded-pill">View All Internships <i class="fa-solid fa-arrow-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for prog in internships %}
+            <div class="col-md-4">
+                <div class="card h-100 card-hover p-4 border bg-white rounded-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">{{ prog.technology }}</span>
+                        <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i> {{ prog.duration_days }} Days</small>
+                    </div>
+                    <h5 class="fw-bold text-dark">{{ prog.program_name }}</h5>
+                    <p class="text-muted small flex-grow-1">{{ prog.description|truncatewords:20 }}</p>
+                    <div class="bg-light p-3 rounded-3 mb-3 small">
+                        <div><strong>Eligibility:</strong> {{ prog.eligibility|truncatewords:6 }}</div>
+                        <div><strong>Deadline:</strong> {{ prog.application_deadline }}</div>
+                    </div>
+                    <a href="{% url 'internship_detail' prog.id %}" class="btn btn-outline-primary w-100 rounded-pill">Apply Now</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4 text-muted">No active internship openings right now.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

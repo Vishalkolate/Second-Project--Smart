@@ -1,0 +1,72 @@
+{% extends 'base/base.html' %}
+{% block title %}Internship Applications Review | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Internship Applications Review</h4>
+        <small class="text-muted">Shortlist applicants, schedule technical interviews, and assign batches</small>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Candidate</th>
+                    <th>Program</th>
+                    <th>Applied Date</th>
+                    <th>Status</th>
+                    <th>Interview Date</th>
+                    <th>Resume</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td class="fw-semibold">{{ app.student.get_full_name|default:app.student.username }}</td>
+                    <td>{{ app.program.program_name }}</td>
+                    <td>{{ app.application_date }}</td>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary">{{ app.selection_status }}</span>
+                    </td>
+                    <td>{{ app.interview_date|default:'Not scheduled' }}</td>
+                    <td>
+                        {% if app.resume %}
+                        <a href="{{ app.resume.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill py-0">Resume</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{% url 'update_application_status' app.id %}" class="d-flex gap-1 align-items-center">
+                            {% csrf_token %}
+                            <select name="selection_status" class="form-select form-select-sm" style="width: 140px;">
+                                <option value="Applied" {% if app.selection_status == 'Applied' %}selected{% endif %}>Applied</option>
+                                <option value="Shortlisted" {% if app.selection_status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                <option value="Interview Scheduled" {% if app.selection_status == 'Interview Scheduled' %}selected{% endif %}>Interview</option>
+                                <option value="Selected" {% if app.selection_status == 'Selected' %}selected{% endif %}>Selected</option>
+                                <option value="Rejected" {% if app.selection_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                <option value="Active" {% if app.selection_status == 'Active' %}selected{% endif %}>Active Intern</option>
+                                <option value="Completed" {% if app.selection_status == 'Completed' %}selected{% endif %}>Completed</option>
+                            </select>
+                            <select name="batch" class="form-select form-select-sm" style="width: 130px;">
+                                <option value="">Batch</option>
+                                {% for b in batches %}
+                                <option value="{{ b.id }}">{{ b.batch_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary rounded-pill py-0">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-4 text-muted">No applications submitted.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

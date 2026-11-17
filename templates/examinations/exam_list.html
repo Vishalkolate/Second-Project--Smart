@@ -1,0 +1,49 @@
+{% extends 'base/base.html' %}
+{% block title %}Examinations | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Online Examination Management</h4>
+        <small class="text-muted">MCQ tests, timers, automated results, and negative marking configuration</small>
+    </div>
+    <a href="{% url 'exam_create' %}" class="btn btn-primary btn-sm rounded-pill"><i class="fa-solid fa-plus me-1"></i> Create Exam</a>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Exam Title</th>
+                    <th>Course</th>
+                    <th>Duration</th>
+                    <th>Total Marks</th>
+                    <th>Passing Marks</th>
+                    <th>Negative Marking</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ex in exams %}
+                <tr>
+                    <td class="fw-semibold">{{ ex.title }}</td>
+                    <td>{{ ex.course.course_name|default:'General' }}</td>
+                    <td>{{ ex.duration_minutes }} mins</td>
+                    <td>{{ ex.total_marks }}</td>
+                    <td>{{ ex.passing_marks }}</td>
+                    <td>-{{ ex.negative_marking }}</td>
+                    <td><span class="badge bg-success-subtle text-success">{{ ex.status }}</span></td>
+                    <td>
+                        <a href="{% url 'exam_questions' ex.id %}" class="btn btn-sm btn-outline-primary rounded-pill py-0">Question Bank</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-4 text-muted">No exams created yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

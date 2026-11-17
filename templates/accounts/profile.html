@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+{% block title %}My Profile | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Account & Profile Settings</h4>
+    <small class="text-muted">Manage your personal details and account credentials</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm mb-4">
+            <h5 class="fw-bold mb-3 text-primary">Personal Details</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Email Address</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Mobile Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ user.phone|default:'' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Update Password (optional)</label>
+                        <input type="password" name="new_password" class="form-control" placeholder="Leave blank to keep existing password">
+                    </div>
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Update Profile</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card p-4 border-0 shadow-sm bg-light">
+            <h5 class="fw-bold mb-3">Account Information</h5>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Role:</strong> <span class="badge bg-primary">{{ user.get_role_display }}</span></p>
+            <p><strong>Date Joined:</strong> {{ user.date_joined|date:'M d, Y' }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

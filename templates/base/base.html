@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart LMS & Internship Management System{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">
+                <i class="fa-solid fa-graduation-cap text-primary"></i>
+                <span class="text-truncate">Smart LMS</span>
+            </div>
+            <div class="sidebar-nav">
+                <div class="sidebar-nav-title">Main Portal</div>
+                <a href="{% url 'dashboard' %}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+
+                {% if request.user.is_superuser or request.user.role in 'super_admin,admin,hr' %}
+                <div class="sidebar-nav-title">Administration</div>
+                <a href="{% url 'admin_panel' %}"><i class="fa-solid fa-sliders"></i> Admin Control</a>
+                <a href="{% url 'student_dashboard' %}"><i class="fa-solid fa-graduation-cap"></i> Student Dashboard</a>
+                <a href="{% url 'intern_dashboard' %}"><i class="fa-solid fa-briefcase"></i> Intern Dashboard</a>
+                <a href="{% url 'student_list' %}"><i class="fa-solid fa-user-graduate"></i> Students</a>
+                <a href="{% url 'instructor_list' %}"><i class="fa-solid fa-chalkboard-user"></i> Instructors & Staff</a>
+                <a href="{% url 'course_list' %}"><i class="fa-solid fa-book-open"></i> Courses</a>
+                <a href="{% url 'category_list' %}"><i class="fa-solid fa-layer-group"></i> Categories</a>
+                <a href="{% url 'module_list' %}"><i class="fa-solid fa-list-check"></i> Course Modules</a>
+                <a href="{% url 'lesson_list' %}"><i class="fa-solid fa-video"></i> Lessons</a>
+                <a href="{% url 'material_list' %}"><i class="fa-solid fa-file-pdf"></i> Study Materials</a>
+                <a href="{% url 'enrollment_list' %}"><i class="fa-solid fa-user-check"></i> Enrollments</a>
+                {% endif %}
+
+                <div class="sidebar-nav-title">Internship Management</div>
+                <a href="{% url 'internship_list' %}"><i class="fa-solid fa-laptop-code"></i> Internship Programs</a>
+                <a href="{% url 'daily_work_messages' %}"><i class="fa-solid fa-comment-dots text-info"></i> Daily Work Messages</a>
+                {% if request.user.role == 'intern' or request.user.role == 'student' %}
+                <a href="{% url 'my_internship' %}"><i class="fa-solid fa-briefcase"></i> My Internship</a>
+                {% endif %}
+                {% if request.user.is_superuser or request.user.role in 'super_admin,admin,hr,trainer' %}
+                <a href="{% url 'work_tracking_logs' %}"><i class="fa-solid fa-stopwatch-20"></i> Work Tracking Logs</a>
+                <a href="{% url 'internship_applications' %}"><i class="fa-solid fa-users-viewfinder"></i> Applications</a>
+                <a href="{% url 'batch_list' %}"><i class="fa-solid fa-people-group"></i> Batches</a>
+                <a href="{% url 'internship_documents' %}"><i class="fa-solid fa-id-card"></i> Doc Verification</a>
+                <a href="{% url 'internship_deposits' %}"><i class="fa-solid fa-vault"></i> Deposits</a>
+                {% endif %}
+
+                <div class="sidebar-nav-title">Daily Operations</div>
+                {% if request.user.role == 'student' %}
+                <a href="{% url 'student_attendance' %}"><i class="fa-solid fa-chalkboard-user text-primary"></i> Lecture Attendance</a>
+                {% elif request.user.role == 'intern' %}
+                <a href="{% url 'intern_attendance' %}"><i class="fa-solid fa-calendar-check text-success"></i> Shift Attendance</a>
+                {% else %}
+                <a href="{% url 'student_attendance' %}"><i class="fa-solid fa-chalkboard-user text-primary"></i> Student Lecture Attendance</a>
+                <a href="{% url 'intern_attendance' %}"><i class="fa-solid fa-calendar-check text-success"></i> Intern Shift Attendance</a>
+                {% endif %}
+                <a href="{% url 'leave_list' %}"><i class="fa-solid fa-envelope-open-text"></i> Leave Requests</a>
+                <a href="{% url 'task_list' %}"><i class="fa-solid fa-list-check"></i> Daily Tasks</a>
+                <a href="{% url 'daily_reports_list' %}"><i class="fa-solid fa-clock-rotate-left"></i> Daily Reports</a>
+
+                <div class="sidebar-nav-title">Academics & Careers</div>
+                {% if request.user.role in 'student,intern' %}
+                <a href="{% url 'my_courses' %}"><i class="fa-solid fa-play"></i> My Courses</a>
+                {% endif %}
+                <a href="{% url 'exam_list' %}"><i class="fa-solid fa-pen-to-square"></i> Examinations</a>
+                <a href="{% url 'project_list' %}"><i class="fa-solid fa-diagram-project"></i> Projects</a>
+                <a href="{% url 'certificate_list' %}"><i class="fa-solid fa-certificate"></i> Certificates</a>
+                <a href="{% url 'placement_portal' %}"><i class="fa-solid fa-building-user"></i> Placements & Jobs</a>
+                <a href="{% url 'mock_interviews' %}"><i class="fa-solid fa-microphone-lines"></i> Mock Interviews</a>
+
+                <div class="sidebar-nav-title">Finance & Reports</div>
+                <a href="{% url 'payment_list' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments & Fees</a>
+                <a href="{% url 'reports_dashboard' %}"><i class="fa-solid fa-chart-line"></i> Reports & Analytics</a>
+
+                {% if request.user.is_superuser or request.user.role in 'super_admin,admin' %}
+                <div class="sidebar-nav-title">System</div>
+                <a href="{% url 'system_settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="{% url 'audit_logs' %}"><i class="fa-solid fa-shield-halved"></i> Audit Logs</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div id="page-content-wrapper">
+            <!-- Topbar -->
+            <nav class="topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-sm btn-light border" id="menu-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <span class="fw-semibold text-secondary d-none d-md-inline">
+                        {{ site_setting.institute_name }}
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{% url 'notification_list' %}" class="btn btn-sm btn-light border position-relative">
+                        <i class="fa-regular fa-bell"></i>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ unread_notifications_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light border dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                            <i class="fa-solid fa-circle-user text-primary fs-5"></i>
+                            <div class="text-start d-none d-sm-block" style="line-height: 1.2;">
+                                <div class="fw-bold">{{ request.user.first_name|default:request.user.username }}</div>
+                                <small class="text-muted" style="font-size: 0.72rem;">{{ request.user.get_role_display }}</small>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fa-regular fa-user me-2"></i> My Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'home' %}" target="_blank"><i class="fa-solid fa-globe me-2"></i> View Website</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Alerts Container -->
+            <div class="container-fluid px-4 pt-3">
+                {% if messages %}
+                    {% for msg in messages %}
+                    <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                        <i class="fa-solid fa-circle-info me-2"></i> {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <!-- Page Body -->
+            <main class="container-fluid px-4 py-3 flex-grow-1">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+                <div>&copy; 2026 {{ site_setting.institute_name }} - Advanced Learning & Career Management System.</div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% extends 'base/public_base.html' %}
+{% block title %}Explore Training Courses - {{ course.course_name }} | {{ site_setting.institute_name }}{% endblock %}
+
+{% block content %}
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-white text-primary px-3 py-1 rounded-pill fw-semibold">{{ course.level }}</span>
+                    <span class="badge bg-white-50 text-white px-3 py-1 rounded-pill">{{ course.category.category_name|default:'General' }}</span>
+                </div>
+                <h1 class="fw-bold mb-3">{{ course.course_name }}</h1>
+                <p class="lead text-white-50 mb-4">{{ course.course_description }}</p>
+                <div class="d-flex flex-wrap gap-4 small text-white-50">
+                    <div><i class="fa-regular fa-clock me-1 text-white"></i> <strong class="text-white">Duration:</strong> {{ course.course_duration }}</div>
+                    <div><i class="fa-solid fa-layer-group me-1 text-white"></i> <strong class="text-white">Category:</strong> {{ course.category.category_name|default:'General' }}</div>
+                    <div>
+                        <i class="fa-solid fa-user-tie me-1 text-white"></i> <strong class="text-white">Instructor:</strong>
+                        {% if course.instructor %}
+                            {{ course.instructor.get_full_name|default:course.instructor.username }}
+                        {% else %}
+                            Senior Trainer
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                <div class="card p-4 text-dark text-center shadow-lg border-0 rounded-4 overflow-hidden">
+                    {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.course_name }}" class="rounded-3 mb-3 w-100 shadow-sm" style="height: 180px; object-fit: cover;">
+                    {% endif %}
+                    <h3 class="fw-bold text-success mb-1">₹{{ course.course_fees }}</h3>
+                    <small class="text-muted mb-3 d-block">Full Access & QR Verified Certificate</small>
+                    {% if is_enrolled %}
+                        <a href="{% url 'course_portal' course.id %}" class="btn btn-success rounded-pill fw-bold py-2 mb-2 w-100">
+                            <i class="fa-solid fa-play me-1"></i> Continue Learning
+                        </a>
+                    {% else %}
+                        <a href="{% url 'enroll_course' course.id %}" class="btn btn-primary rounded-pill fw-bold py-2 mb-2 w-100">
+                            <i class="fa-solid fa-check-circle me-1"></i> Enroll in Course
+                        </a>
+                    {% endif %}
+                    <small class="text-muted">Includes Certificate & Project Review</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-book-open text-primary me-2"></i>Course Syllabus & Curriculum</h4>
+            {% if modules %}
+            <div class="accordion" id="syllabusAccordion">
+                {% for mod in modules %}
+                <div class="accordion-item mb-3 border rounded-3 shadow-sm overflow-hidden">
+                    <h2 class="accordion-header" id="heading{{ mod.id }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ mod.id }}">
+                            Module {{ forloop.counter }}: {{ mod.module_title }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ mod.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#syllabusAccordion">
+                        <div class="accordion-body bg-light">
+                            <p class="small text-muted">{{ mod.module_description }}</p>
+                            <ul class="list-group list-group-flush rounded border">
+                                {% for les in mod.lessons.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <i class="fa-solid fa-circle-play text-primary me-2"></i> {{ les.lesson_title }}
+                                        {% if les.is_free %}<span class="badge bg-success-subtle text-success ms-2">Free Preview</span>{% endif %}
+                                    </span>
+                                    <span class="badge bg-secondary-subtle text-secondary small">{{ les.duration_minutes }} mins</span>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item small text-muted">Lessons will be published soon.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-4 bg-light rounded-3 text-muted text-center">
+                <i class="fa-solid fa-list-check fa-2x mb-2 d-block"></i>
+                Curriculum modules are currently being prepared by the instructor.
+            </div>
+            {% endif %}
+
+            <!-- Reviews -->
+            <div class="mt-5">
+                <h4 class="fw-bold mb-3"><i class="fa-solid fa-star text-warning me-2"></i>Student Feedback & Reviews</h4>
+                {% for r in reviews %}
+                <div class="border-bottom py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-dark">{{ r.student.get_full_name|default:r.student.username }}</strong>
+                        <span class="text-warning small"><i class="fa-solid fa-star"></i> {{ r.rating }} / 5</span>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">{{ r.review }}</p>
+                </div>
+                {% empty %}
+                <p class="text-muted small">No student reviews yet. Be the first to enroll and rate!</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-4 border-0 shadow-sm bg-light rounded-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-sparkles text-primary me-2"></i>Course Features</h5>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Comprehensive Video Lectures</li>
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Downloadable PDF Study Guides</li>
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Practical Task Submissions</li>
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Module Assessments & Exams</li>
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> QR Code Verified Certificate</li>
+                    <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Direct Mentor Assistance</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

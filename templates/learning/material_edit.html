@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+{% block title %}Edit Material - {{ material.material_title }} | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'material_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Study Materials
+    </a>
+    <h4 class="fw-bold mb-1"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Study Material</h4>
+    <small class="text-muted">Modify document title, target lesson mapping, or replace the file attachment</small>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="fw-bold mb-0 text-dark">Material: {{ material.material_title }}</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% url 'material_update' material.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Target Lesson <span class="text-danger">*</span></label>
+                        <select name="lesson" class="form-select" required>
+                            <option value="">Select Lesson</option>
+                            {% for les in lessons %}
+                            <option value="{{ les.id }}" {% if material.lesson_id == les.id %}selected{% endif %}>
+                                {{ les.module.course.course_name }} &rarr; {{ les.lesson_title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Material Title <span class="text-danger">*</span></label>
+                        <input type="text" name="material_title" class="form-control" value="{{ material.material_title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Replace File (Leave blank to keep existing)</label>
+                        <input type="file" name="file_path" class="form-control">
+                        {% if material.file_path %}
+                        <div class="small text-muted mt-2 d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-paperclip text-primary"></i>
+                            <span>Current File: <a href="{{ material.file_path.url }}" target="_blank" class="fw-semibold">{{ material.file_path.name }}</a> ({{ material.file_type }})</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{% url 'material_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

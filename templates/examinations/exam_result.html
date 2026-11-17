@@ -1,0 +1,76 @@
+{% extends 'base/base.html' %}
+{% block title %}Exam Result: {{ attempt.exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4 p-md-5 border-0 shadow-sm text-center mb-4">
+            <div class="mb-3">
+                {% if attempt.result_status == 'Passed' %}
+                <i class="fa-solid fa-circle-check fa-4x text-success"></i>
+                <h2 class="fw-bold text-success mt-2">Congratulations, You Passed!</h2>
+                {% else %}
+                <i class="fa-solid fa-circle-xmark fa-4x text-danger"></i>
+                <h2 class="fw-bold text-danger mt-2">Needs Improvement (Failed)</h2>
+                {% endif %}
+            </div>
+            <h4 class="fw-semibold text-secondary mb-4">{{ attempt.exam.title }}</h4>
+
+            <div class="row g-3 text-center mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="small text-muted">Marks Obtained</div>
+                        <h4 class="fw-bold text-primary mb-0">{{ attempt.obtained_marks }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="small text-muted">Total Marks</div>
+                        <h4 class="fw-bold text-dark mb-0">{{ attempt.exam.total_marks }}</h4>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="small text-muted">Score Percentage</div>
+                        <h4 class="fw-bold text-success mb-0">{{ percentage }}%</h4>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="small text-muted">Passing Marks</div>
+                        <h4 class="fw-bold text-secondary mb-0">{{ attempt.exam.passing_marks }}</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'exam_list' %}" class="btn btn-primary rounded-pill px-4">Back to Exams</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Answers Breakdown -->
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-3">Detailed Answers & Explanations</h5>
+            {% for a in answers %}
+            <div class="border rounded p-3 mb-3 bg-light">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Q. {{ a.question.question_text }}</strong>
+                    <span class="badge {% if a.marks_obtained > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ a.marks_obtained }} Marks
+                    </span>
+                </div>
+                <div class="small text-muted mb-1">
+                    Your Selection: <strong>{{ a.selected_option.option_text|default:'Not answered' }}</strong>
+                </div>
+                {% if a.question.explanation %}
+                <div class="small text-info mt-2">
+                    <i class="fa-solid fa-lightbulb me-1"></i> <strong>Explanation:</strong> {{ a.question.explanation }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

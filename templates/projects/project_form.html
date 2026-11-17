@@ -1,0 +1,45 @@
+{% extends 'base/base.html' %}
+{% block title %}Assign Project | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Assign Capstone Project</h4>
+    <small class="text-muted">Assign team project, configure deadline, and select member students</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Project Name</label>
+                        <input type="text" name="project_name" class="form-control" required placeholder="e.g. Smart E-Commerce Platform with Django & Stripe">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Submission Deadline</label>
+                        <input type="date" name="deadline" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Select Team Members</label>
+                        <select name="members" class="form-select" multiple size="4" required>
+                            {% for s in students %}
+                            <option value="{{ s.id }}">{{ s.username }} ({{ s.get_full_name }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Hold Ctrl to select multiple students.</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Project Scope & Deliverables</label>
+                        <textarea name="description" class="form-control" rows="5" required placeholder="Detail required features, DB schema expectations, architecture, and UI requirements."></textarea>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Create & Assign Project</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

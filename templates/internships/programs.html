@@ -1,0 +1,194 @@
+{% extends 'base/base.html' %}
+{% block title %}Internship Programs Management | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-laptop-code text-primary me-2"></i>Internship Programs Management</h4>
+        <small class="text-muted">Configure active internship tracks, timelines, and security deposits</small>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'batch_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="fa-solid fa-people-group me-1"></i> Batches
+        </a>
+        <a href="{% url 'internship_applications' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="fa-solid fa-users-viewfinder me-1"></i> Applications
+        </a>
+        <a href="{% url 'internship_deposits' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="fa-solid fa-vault me-1"></i> Security Deposits
+        </a>
+        <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addProgramModal">
+            <i class="fa-solid fa-plus me-1"></i> Add Program
+        </button>
+    </div>
+</div>
+
+<!-- KPI Summary Metric Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Total Programs</small>
+                <h3 class="fw-bold mb-0 mt-1 text-primary">{{ total_programs }}</h3>
+                <small class="text-muted">Configured tracks</small>
+            </div>
+            <div class="kpi-icon primary"><i class="fa-solid fa-laptop-code"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Active Batches</small>
+                <h3 class="fw-bold mb-0 mt-1 text-success">{{ active_batches_count }}</h3>
+                <small class="text-muted">Live training cohorts</small>
+            </div>
+            <div class="kpi-icon success"><i class="fa-solid fa-people-group"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Total Applications</small>
+                <h3 class="fw-bold mb-0 mt-1 text-warning">{{ total_applications }}</h3>
+                <small class="text-muted">Candidates applied</small>
+            </div>
+            <div class="kpi-icon warning"><i class="fa-solid fa-users-viewfinder"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Deposit Policy</small>
+                <h3 class="fw-bold mb-0 mt-1 text-info">100%</h3>
+                <small class="text-muted">Refundable upon completion</small>
+            </div>
+            <div class="kpi-icon info"><i class="fa-solid fa-vault"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Programs Grid -->
+<div class="row g-4">
+    {% for prog in programs %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm p-4 d-flex flex-column rounded-4 bg-white position-relative">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill fw-semibold">
+                    <i class="fa-solid fa-code me-1"></i> {{ prog.technology }}
+                </span>
+                {% if prog.status == 'Active' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Active</span>
+                {% elif prog.status == 'Upcoming' %}
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1"><i class="fa-regular fa-clock me-1"></i>Upcoming</span>
+                {% else %}
+                <span class="badge bg-secondary-subtle text-secondary px-2 py-1">{{ prog.status }}</span>
+                {% endif %}
+            </div>
+
+            <h5 class="fw-bold text-dark mb-2">{{ prog.program_name }}</h5>
+            <p class="small text-muted flex-grow-1">{{ prog.description|truncatewords:20 }}</p>
+
+            <div class="bg-light p-3 rounded-3 mb-3 small">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted"><i class="fa-regular fa-calendar-days me-1 text-primary"></i> Timeline:</span>
+                    <strong class="text-dark">{{ prog.duration_days }} Days ({{ prog.start_date|date:"d M" }} - {{ prog.end_date|date:"d M Y" }})</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted"><i class="fa-solid fa-vault me-1 text-warning"></i> Security Deposit:</span>
+                    <strong class="text-success">₹{{ prog.deposit_amount }} (Refundable)</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted"><i class="fa-regular fa-clock me-1 text-danger"></i> Deadline:</span>
+                    <strong class="text-danger">{{ prog.application_deadline|date:"d M Y" }}</strong>
+                </div>
+            </div>
+
+            <div class="small text-muted mb-3">
+                <strong>Eligibility:</strong> {{ prog.eligibility|truncatewords:8 }}
+            </div>
+
+            <div class="pt-2 d-flex gap-2">
+                <a href="{% url 'program_edit' prog.id %}" class="btn btn-outline-primary btn-sm rounded-pill w-50 py-2">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Edit Track
+                </a>
+                <a href="{% url 'internship_detail' prog.id %}" target="_blank" class="btn btn-light border btn-sm rounded-pill w-50 py-2">
+                    <i class="fa-solid fa-eye me-1"></i> View Live
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="fa-solid fa-laptop-code fa-3x mb-3 text-secondary d-block"></i>
+        <h5>No internship programs configured yet.</h5>
+        <p class="small">Click "+ Add Program" to setup technical tracks, duration, and deposit structures.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add Program Modal -->
+<div class="modal fade" id="addProgramModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form method="POST" action="{% url 'program_create' %}" class="modal-content border-0 shadow rounded-4">
+            {% csrf_token %}
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus-circle me-2"></i>Configure Internship Track</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold">Program Name <span class="text-danger">*</span></label>
+                        <input type="text" name="program_name" class="form-control" required placeholder="e.g. 90-Day Full Stack Python & Cloud Internship">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Technology Domain <span class="text-danger">*</span></label>
+                        <input type="text" name="technology" class="form-control" required placeholder="e.g. Python Django, React, AI">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Duration (Days) <span class="text-danger">*</span></label>
+                        <input type="number" name="duration_days" class="form-control" value="90" min="30" max="365" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Security Deposit (₹) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="deposit_amount" class="form-control" value="5000.00" required>
+                        <small class="text-muted">100% Refundable on completion</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Active">Active</option>
+                            <option value="Upcoming">Upcoming</option>
+                            <option value="Closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">End Date <span class="text-danger">*</span></label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Application Deadline <span class="text-danger">*</span></label>
+                        <input type="date" name="application_deadline" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Candidate Eligibility Requirements</label>
+                        <input type="text" name="eligibility" class="form-control" value="BE/B.Tech/MCA/BCA/Diploma/Graduate in CS/IT or relevant tech background." required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Program Description & Learning Outcomes</label>
+                        <textarea name="description" class="form-control" rows="3" required placeholder="Detailed syllabus, real-time client projects, daily schedule, and evaluation criteria..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">Save & Activate Program</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

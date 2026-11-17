@@ -1,0 +1,68 @@
+{% extends 'base/base.html' %}
+{% block title %}Internship Program Form | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">{% if program %}Edit{% else %}Create{% endif %} Internship Program</h4>
+    <small class="text-muted">Define curriculum technology, deposit requirements, and application windows</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold">Program Name</label>
+                        <input type="text" name="program_name" class="form-control" value="{{ program.program_name|default:'' }}" required placeholder="e.g. Full-Stack Python Django Internship">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Technology Stack</label>
+                        <input type="text" name="technology" class="form-control" value="{{ program.technology|default:'' }}" required placeholder="Python, Django, MySQL">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Duration (Days)</label>
+                        <input type="number" name="duration_days" class="form-control" value="{{ program.duration_days|default:90 }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ program.start_date|date:'Y-m-d'|default:'' }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">End Date</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ program.end_date|date:'Y-m-d'|default:'' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Application Deadline</label>
+                        <input type="date" name="application_deadline" class="form-control" value="{{ program.application_deadline|date:'Y-m-d'|default:'' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Deposit Amount (Rs.)</label>
+                        <input type="number" step="0.01" name="deposit_amount" class="form-control" value="{{ program.deposit_amount|default:'0.00' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Eligibility Criteria</label>
+                        <textarea name="eligibility" class="form-control" rows="2">{{ program.eligibility|default:'BE / B.Tech / MCA / BCA with basic programming knowledge.' }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold">Detailed Description</label>
+                        <textarea name="description" class="form-control" rows="4" required>{{ program.description|default:'' }}</textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Active" {% if program.status == 'Active' %}selected{% endif %}>Active</option>
+                            <option value="Upcoming" {% if program.status == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                            <option value="Closed" {% if program.status == 'Closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Program</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

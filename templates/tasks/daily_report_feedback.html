@@ -1,0 +1,45 @@
+{% extends 'base/base.html' %}
+{% block title %}Daily Report Review | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Review Daily Work Report</h4>
+    <small class="text-muted">Student: {{ report.student.username }} | Date: {{ report.report_date }}</small>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm bg-light">
+            <h5 class="fw-bold mb-3">Report Details</h5>
+            <p><strong>Today's Task:</strong> {{ report.today_task }}</p>
+            <p><strong>Completed Work:</strong> {{ report.completed_work }}</p>
+            <p><strong>Pending Work:</strong> {{ report.pending_work|default:'None' }}</p>
+            <p><strong>Tomorrow's Plan:</strong> {{ report.tomorrow_plan|default:'None' }}</p>
+            {% if report.github_url %}
+            <p><strong>GitHub:</strong> <a href="{{ report.github_url }}" target="_blank">{{ report.github_url }}</a></p>
+            {% endif %}
+            {% if report.screenshot %}
+            <p><strong>Screenshot:</strong> <a href="{{ report.screenshot.url }}" target="_blank">View Uploaded Image</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-3">Mentor Feedback</h5>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Team Leader Remarks</label>
+                    <textarea name="team_leader_remarks" class="form-control" rows="3">{{ report.team_leader_remarks }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Trainer Feedback</label>
+                    <textarea name="trainer_feedback" class="form-control" rows="3">{{ report.trainer_feedback }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary px-4 rounded-pill">Save Feedback</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

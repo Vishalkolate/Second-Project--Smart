@@ -1,0 +1,122 @@
+{% extends 'base/base.html' %}
+{% block title %}My Mock Interviews | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-microphone-lines text-primary me-2"></i>My Mock Interview Drives</h4>
+        <small class="text-muted">Simulated industry tech rounds, performance scores, and trainer feedback for placement readiness</small>
+    </div>
+    <div>
+        <a href="{% url 'placement_portal' %}" class="btn btn-outline-primary btn-sm rounded-pill">
+            <i class="fa-solid fa-building-user me-1"></i> Corporate Placement Portal
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Interviews List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i>My Interview Schedule & Scores</h6>
+                <span class="badge bg-light text-muted border">{{ interviews.count }} Sessions</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Interviewer Mentor</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Score (/100)</th>
+                            <th>Feedback & Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in interviews %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark">{{ m.interviewer.get_full_name|default:m.interviewer.username }}</div>
+                                <small class="text-muted">{{ m.interviewer.get_role_display }}</small>
+                            </td>
+                            <td>
+                                <div class="small fw-semibold text-dark">{{ m.interview_date|date:"D, d M Y" }}</div>
+                                <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>{{ m.interview_date|date:"h:i A" }}</small>
+                            </td>
+                            <td>
+                                {% if m.status == 'Completed' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-circle-check me-1"></i>Completed</span>
+                                {% elif m.status == 'Scheduled' %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="fa-regular fa-clock me-1"></i>Scheduled</span>
+                                {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary">{{ m.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if m.marks is not None %}
+                                <div class="fw-bold text-primary">{{ m.marks }} / 100</div>
+                                <div class="progress mt-1" style="height: 4px; width: 80px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ m.marks }}%;"></div>
+                                </div>
+                                {% else %}
+                                <span class="badge bg-light text-muted border">Pending Review</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted" style="max-width: 250px;">
+                                {{ m.feedback|default:'Detailed performance feedback will appear here after your session.' }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-microphone-lines fa-3x mb-3 text-secondary d-block"></i>
+                                <h6 class="fw-bold">No Mock Interviews Scheduled Yet</h6>
+                                <p class="small text-muted mb-0">Your technical mentor or HR will schedule simulated mock drives before company hiring visits.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preparation Checklist Card -->
+    <div class="col-lg-4">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-light mb-4">
+            <h6 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Tech Interview Preparation</h6>
+            <ul class="list-unstyled small mb-0">
+                <li class="mb-3 d-flex align-items-start">
+                    <i class="fa-solid fa-check-circle text-success me-2 mt-1"></i>
+                    <div>
+                        <strong>Core Foundations:</strong>
+                        <div class="text-muted">Revise Python OOP, Django architecture, REST APIs, and database indexing.</div>
+                    </div>
+                </li>
+                <li class="mb-3 d-flex align-items-start">
+                    <i class="fa-solid fa-check-circle text-success me-2 mt-1"></i>
+                    <div>
+                        <strong>Live Coding & Problem Solving:</strong>
+                        <div class="text-muted">Practice data structures, SQL queries, and clean modular code writing.</div>
+                    </div>
+                </li>
+                <li class="mb-3 d-flex align-items-start">
+                    <i class="fa-solid fa-check-circle text-success me-2 mt-1"></i>
+                    <div>
+                        <strong>Project Architecture Walkthrough:</strong>
+                        <div class="text-muted">Be ready to explain your Capstone project schema, APIs, and deployment steps.</div>
+                    </div>
+                </li>
+                <li class="d-flex align-items-start">
+                    <i class="fa-solid fa-check-circle text-success me-2 mt-1"></i>
+                    <div>
+                        <strong>Soft Skills & Confidence:</strong>
+                        <div class="text-muted">Clear communication, professional articulation, and asking insightful questions.</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

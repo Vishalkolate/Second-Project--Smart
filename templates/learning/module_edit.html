@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+{% block title %}Edit Module - {{ module.module_title }} | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'module_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Modules
+    </a>
+    <h4 class="fw-bold mb-1"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Course Module</h4>
+    <small class="text-muted">Modify chapter title, syllabus sequence, and status</small>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="fw-bold mb-0 text-dark">Module Information: {{ module.module_title }}</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{% url 'module_update' module.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Target Course <span class="text-danger">*</span></label>
+                        <select name="course" class="form-select" required>
+                            <option value="">Select Course</option>
+                            {% for course in courses %}
+                            <option value="{{ course.id }}" {% if module.course_id == course.id %}selected{% endif %}>
+                                {{ course.course_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Module Title <span class="text-danger">*</span></label>
+                        <input type="text" name="module_title" class="form-control" value="{{ module.module_title }}" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Sequence Number</label>
+                            <input type="number" name="sequence_number" class="form-control" value="{{ module.sequence_number }}" min="1" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Active" {% if module.status == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="Inactive" {% if module.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Module Description</label>
+                        <textarea name="module_description" class="form-control" rows="4">{{ module.module_description }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{% url 'module_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

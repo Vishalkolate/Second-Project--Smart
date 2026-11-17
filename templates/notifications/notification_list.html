@@ -1,0 +1,38 @@
+{% extends 'base/base.html' %}
+{% block title %}In-System Notifications | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Notifications Center</h4>
+        <small class="text-muted">Deadline alerts, attendance notices, and exam updates</small>
+    </div>
+    <form method="POST" action="{% url 'mark_all_read' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill">Mark All As Read</button>
+    </form>
+</div>
+
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="list-group list-group-flush">
+        {% for n in notifications %}
+        <div class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center {% if not n.is_read %}bg-light{% endif %}">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary-subtle text-primary">{{ n.notification_type }}</span>
+                    <h6 class="fw-bold text-dark mb-0">{{ n.title }}</h6>
+                    {% if not n.is_read %}<span class="badge bg-danger">New</span>{% endif %}
+                </div>
+                <p class="small text-muted mb-0">{{ n.message }}</p>
+                <small class="text-muted">{{ n.created_at|date:'M d, Y H:i' }}</small>
+            </div>
+            {% if not n.is_read %}
+            <a href="{% url 'mark_read' n.id %}" class="btn btn-sm btn-outline-secondary rounded-pill py-0">Mark Read</a>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="text-center py-5 text-muted">No notifications in your inbox.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

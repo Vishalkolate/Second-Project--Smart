@@ -1,0 +1,189 @@
+{% extends 'base/base.html' %}
+{% block title %}Mock Interview Drives | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="fa-solid fa-microphone-lines text-primary me-2"></i>Mock Interview Drives</h4>
+        <small class="text-muted">Prepare students with simulated technical interviews, live coding rounds, feedback, and scoring</small>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#scheduleMockModal">
+            <i class="fa-solid fa-plus me-1"></i> Schedule Mock Drive
+        </button>
+    </div>
+</div>
+
+<!-- KPI Metrics Grid -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Total Drives</small>
+                <h3 class="fw-bold mb-0 mt-1 text-primary">{{ total_interviews }}</h3>
+                <small class="text-muted">Conducted sessions</small>
+            </div>
+            <div class="kpi-icon primary"><i class="fa-solid fa-microphone-lines"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Scheduled</small>
+                <h3 class="fw-bold mb-0 mt-1 text-warning">{{ scheduled_interviews }}</h3>
+                <small class="text-muted">Upcoming interviews</small>
+            </div>
+            <div class="kpi-icon warning"><i class="fa-regular fa-clock"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Completed</small>
+                <h3 class="fw-bold mb-0 mt-1 text-success">{{ completed_interviews }}</h3>
+                <small class="text-muted">Evaluated & scored</small>
+            </div>
+            <div class="kpi-icon success"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-card shadow-sm border-0">
+            <div>
+                <small class="text-muted fw-bold text-uppercase">Average Score</small>
+                <h3 class="fw-bold mb-0 mt-1 text-info">{{ avg_marks }} <span class="fs-6 text-muted">/ 100</span></h3>
+                <small class="text-muted">Candidate performance</small>
+            </div>
+            <div class="kpi-icon info"><i class="fa-solid fa-chart-line"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-list-check me-2 text-primary"></i>Scheduled & Completed Interviews ({{ interviews.count }})</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Student Candidate</th>
+                        <th>Technical Interviewer</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Score (/100)</th>
+                        <th>Interviewer Feedback</th>
+                        <th class="text-end" style="width: 140px;">Evaluation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in interviews %}
+                    <tr>
+                        <td class="text-muted small">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                                    {{ m.student.first_name|first|default:m.student.username|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">{{ m.student.get_full_name|default:m.student.username }}</div>
+                                    <small class="text-muted">@{{ m.student.username }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ m.interviewer.get_full_name|default:m.interviewer.username }}</div>
+                            <small class="text-muted">{{ m.interviewer.get_role_display }}</small>
+                        </td>
+                        <td>
+                            <div class="small fw-semibold text-dark">{{ m.interview_date|date:"D, d M Y" }}</div>
+                            <small class="text-muted"><i class="fa-regular fa-clock me-1"></i>{{ m.interview_date|date:"h:i A" }}</small>
+                        </td>
+                        <td>
+                            {% if m.status == 'Completed' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-circle-check me-1"></i>Completed</span>
+                            {% elif m.status == 'Scheduled' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="fa-regular fa-clock me-1"></i>Scheduled</span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">{{ m.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if m.marks is not None %}
+                            <div class="fw-bold text-primary">{{ m.marks }} / 100</div>
+                            <div class="progress mt-1" style="height: 4px; width: 80px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ m.marks }}%;"></div>
+                            </div>
+                            {% else %}
+                            <span class="text-muted small">Not Scored</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted" style="max-width: 250px;">
+                            {{ m.feedback|truncatewords:10|default:'Awaiting interview round' }}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'mock_interview_evaluate' m.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="fa-solid fa-pen-ruler me-1"></i> Evaluate
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-microphone-lines fa-3x mb-3 text-secondary d-block"></i>
+                            <p class="mb-2">No mock interview drives scheduled yet.</p>
+                            <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#scheduleMockModal">
+                                <i class="fa-solid fa-plus me-1"></i> Schedule First Drive
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Mock Modal -->
+<div class="modal fade" id="scheduleMockModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{% url 'mock_interview_schedule' %}" class="modal-content border-0 shadow rounded-4">
+            {% csrf_token %}
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-plus me-2"></i>Schedule Mock Interview Drive</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Select Student Candidate <span class="text-danger">*</span></label>
+                    <select name="student" class="form-select" required>
+                        <option value="">Choose Student</option>
+                        {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.get_full_name|default:s.username }} (@{{ s.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Assign Technical Interviewer <span class="text-danger">*</span></label>
+                    <select name="interviewer" class="form-select" required>
+                        <option value="">Choose Interviewer</option>
+                        {% for i in interviewers %}
+                        <option value="{{ i.id }}">{{ i.get_full_name|default:i.username }} ({{ i.get_role_display }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Interview Date & Time <span class="text-danger">*</span></label>
+                    <input type="datetime-local" name="interview_date" class="form-control" required>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4">Confirm Schedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

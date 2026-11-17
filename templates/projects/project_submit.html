@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}
+{% block title %}Submit Project: {{ project.project_name }} | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'project_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Projects
+    </a>
+    <h4 class="fw-bold mb-1"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i>Submit Project Deliverables</h4>
+    <small class="text-muted">Upload source code repository, project documentation, and notes for mentor review</small>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Project Context Card -->
+        <div class="card border-0 shadow-sm p-4 rounded-4 mb-4 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-primary-subtle text-primary">{{ project.status }}</span>
+                <span class="small text-danger fw-semibold"><i class="fa-regular fa-clock me-1"></i> Deadline: {{ project.deadline|date:"d M Y" }}</span>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">{{ project.project_name }}</h5>
+            <p class="small text-muted mb-0">{{ project.description }}</p>
+        </div>
+
+        {% if existing_sub %}
+        <div class="alert alert-info border-0 shadow-sm rounded-4 mb-4 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong><i class="fa-solid fa-circle-check text-success me-1"></i> Previous Submission Found</strong>
+                <span class="badge {% if existing_sub.review_status == 'Approved' %}bg-success{% elif existing_sub.review_status == 'Rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                    {{ existing_sub.review_status }}
+                </span>
+            </div>
+            <div class="small text-muted">
+                <div><i class="fa-brands fa-github me-1"></i> <a href="{{ existing_sub.github_url }}" target="_blank" class="fw-semibold">{{ existing_sub.github_url }}</a></div>
+                {% if existing_sub.attachment %}
+                <div class="mt-1"><i class="fa-solid fa-paperclip me-1"></i> <a href="{{ existing_sub.attachment.url }}" target="_blank">Download Previous Deliverable</a></div>
+                {% endif %}
+                {% if existing_sub.remarks %}
+                <div class="mt-1 text-dark"><strong>Mentor Remarks:</strong> {{ existing_sub.remarks }}</div>
+                {% endif %}
+            </div>
+            <div class="small text-muted mt-2">Submitting below will update your current review submission.</div>
+        </div>
+        {% endif %}
+
+        <!-- Submission Form -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="fw-bold mb-0 text-dark">Deliverables Submission Form</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">GitHub Repository URL <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="fa-brands fa-github text-dark"></i></span>
+                            <input type="url" name="github_url" class="form-control" required placeholder="https://github.com/your-username/project-repo" value="{{ existing_sub.github_url|default:'' }}">
+                        </div>
+                        <small class="text-muted">Ensure the repository is public or access is granted to your trainer.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Project Archive / Documentation (ZIP, PDF, DOCX)</label>
+                        <input type="file" name="attachment" class="form-control">
+                        <small class="text-muted">Include database schemas, architecture diagrams, or compressed build.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Student Notes & Summary</label>
+                        <textarea name="remarks" class="form-control" rows="3" placeholder="Outline completed modules, special features, credentials, and test notes...">{{ existing_sub.remarks|default:'' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{% url 'project_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold">
+                            <i class="fa-solid fa-cloud-arrow-up me-1"></i> Submit for Mentor Evaluation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

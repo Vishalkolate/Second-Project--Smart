@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+{% block title %}Apply for {{ program.program_name }} | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h4 class="fw-bold mb-1">Submit Internship Application</h4>
+    <small class="text-muted">{{ program.program_name }} ({{ program.technology }})</small>
+</div>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Candidate Username</label>
+                    <input type="text" class="form-control" value="{{ request.user.username }}" disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Upload Updated Resume (PDF)</label>
+                    <input type="file" name="resume" class="form-control" accept=".pdf" required>
+                </div>
+                <div class="p-3 bg-light rounded-3 mb-4 small">
+                    <strong>Note:</strong> By submitting, you agree to the daily 09:00 AM - 06:00 PM workflow, practical sprint evaluations, and submission criteria of {{ program.program_name }}.
+                </div>
+                <button type="submit" class="btn btn-primary px-4 rounded-pill">Submit Application</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

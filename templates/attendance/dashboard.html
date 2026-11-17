@@ -1,0 +1,145 @@
+{% extends 'base/base.html' %}
+{% block title %}Daily Attendance Management | Smart LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Attendance Management</h4>
+        <small class="text-muted">Batch-wise daily attendance records, late entry tracking, and roster marking</small>
+    </div>
+    <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+        <i class="fa-solid fa-plus me-1"></i> Mark Single Attendance
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 border-0 shadow-sm mb-4">
+    <form method="GET" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold mb-1">Attendance Date</label>
+            <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold mb-1">Internship Batch</label>
+            <select name="batch" class="form-select form-select-sm">
+                <option value="">All Batches</option>
+                {% for b in batches %}
+                <option value="{{ b.id }}" {% if selected_batch == b.id|stringformat:'i' %}selected{% endif %}>{{ b.batch_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-secondary btn-sm rounded-pill w-100">
+                <i class="fa-solid fa-filter me-1"></i> Filter Attendance
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Student Name</th>
+                    <th>Batch</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td class="small">{{ r.attendance_date }}</td>
+                    <td class="fw-semibold">{{ r.student.get_full_name|default:r.student.username }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ r.batch.batch_name|default:'General' }}</span></td>
+                    <td class="small text-muted">{{ r.check_in|default:'-' }}</td>
+                    <td class="small text-muted">{{ r.check_out|default:'-' }}</td>
+                    <td>
+                        {% if r.status == 'present' %}
+                        <span class="badge bg-success">Present</span>
+                        {% elif r.status == 'absent' %}
+                        <span class="badge bg-danger">Absent</span>
+                        {% elif r.status == 'half_day' %}
+                        <span class="badge bg-warning text-dark">Half Day</span>
+                        {% else %}
+                        <span class="badge bg-info text-dark">Leave</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ r.remarks|default:'-' }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-4 text-muted">No attendance marked for this date.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Mark Attendance -->
+<div class="modal fade" id="markAttendanceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{% url 'mark_attendance' %}" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Mark Student Attendance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Select Student</label>
+                    <select name="student" class="form-select" required>
+                        {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.username }} ({{ s.get_full_name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Batch</label>
+                    <select name="batch" class="form-select">
+                        <option value="">None / General</option>
+                        {% for b in batches %}
+                        <option value="{{ b.id }}">{{ b.batch_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Date</label>
+                    <input type="date" name="attendance_date" class="form-control" value="{{ selected_date }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="half_day">Half Day</option>
+                        <option value="leave">Leave</option>
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">Check In</label>
+                        <input type="time" name="check_in" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-semibold">Check Out</label>
+                        <input type="time" name="check_out" class="form-control">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Remarks</label>
+                    <input type="text" name="remarks" class="form-control" placeholder="e.g. On-time, Late entry">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary rounded-pill">Save Attendance</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

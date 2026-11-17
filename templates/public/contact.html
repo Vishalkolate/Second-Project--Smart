@@ -1,0 +1,77 @@
+{% extends 'base/public_base.html' %}
+{% block title %}Contact Us | {{ site_setting.institute_name }}{% endblock %}
+
+{% block content %}
+<div class="bg-primary text-white py-5 text-center">
+    <div class="container">
+        <h1 class="fw-bold">Contact Our Campus</h1>
+        <p class="lead text-white-50">We are here to help you start your tech career.</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-5">
+            <h4 class="fw-bold mb-3">Get in Touch</h4>
+            <p class="text-muted mb-4">Have questions regarding admission, courses, or internship opportunities? Reach out to our counselor desk.</p>
+
+            <div class="d-flex align-items-start gap-3 mb-4">
+                <div class="kpi-icon primary flex-shrink-0"><i class="fa-solid fa-location-dot"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Campus Address</h6>
+                    <div class="text-muted small">{{ site_setting.address }}</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-start gap-3 mb-4">
+                <div class="kpi-icon success flex-shrink-0"><i class="fa-solid fa-envelope"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Official Email</h6>
+                    <div class="text-muted small">{{ site_setting.email }}</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-start gap-3 mb-4">
+                <div class="kpi-icon warning flex-shrink-0"><i class="fa-solid fa-phone"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Phone Number</h6>
+                    <div class="text-muted small">{{ site_setting.phone }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card p-4 p-md-5 border-0 shadow-sm">
+                <h4 class="fw-bold mb-4">Send Us a Message</h4>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Your Name</label>
+                            <input type="text" name="name" class="form-control" required placeholder="Full Name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Email Address</label>
+                            <input type="email" name="email" class="form-control" required placeholder="name@domain.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Mobile Number</label>
+                            <input type="text" name="phone" class="form-control" placeholder="+91 98765 43210">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Subject</label>
+                            <input type="text" name="subject" class="form-control" required placeholder="Course Inquiry">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Your Message</label>
+                            <textarea name="message" class="form-control" rows="4" required placeholder="How can we help you?"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                                Send Message <i class="fa-solid fa-paper-plane ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
