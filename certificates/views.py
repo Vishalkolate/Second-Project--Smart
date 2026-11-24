@@ -10,18 +10,27 @@ from .models import Certificate
 from .services import generate_certificate_pdf, generate_qr_for_certificate
 
 
-@role_required('super_admin', 'admin', 'hr', 'trainer')
+@login_required
 def certificate_list(request):
-    certificates = Certificate.objects.select_related('student', 'course', 'internship_program').all()
-    students = User.objects.filter(role__in=['student', 'intern'])
-    courses = Course.objects.all()
-    programs = InternshipProgram.objects.all()
-    return render(request, 'certificates/certificate_list.html', {
-        'certificates': certificates,
-        'students': students,
-        'courses': courses,
-        'programs': programs,
-    })
+    user = request.user
+    is_staff = user.is_superuser or user.role in ['super_admin', 'admin', 'hr', 'trainer']
+    if is_staff:
+        certificates = Certificate.objects.select_related('student', 'course', 'internship_program').all()
+        students = User.objects.filter(role__in=['student', 'intern'])
+        courses = Course.objects.all()
+        programs = InternshipProgram.objects.all()
+        return render(request, 'certificates/certificate_list.html', {
+            'certificates': certificates,
+            'students': students,
+            'courses': courses,
+            'programs': programs,
+        })
+    else:
+        # Student / Intern view of their verified certificates
+        certificates = Certificate.objects.filter(student=user).select_related('course', 'internship_program').order_by('-issue_date')
+        return render(request, 'certificates/my_certificates.html', {
+            'certificates': certificates,
+        })
 
 
 @role_required('super_admin', 'admin', 'hr', 'trainer')

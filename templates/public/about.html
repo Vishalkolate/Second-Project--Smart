@@ -2,17 +2,21 @@
 {% block title %}About Us | {{ site_setting.institute_name }}{% endblock %}
 
 {% block content %}
-<div class="bg-primary text-white py-5 text-center">
+<!-- Page Hero Banner -->
+<div class="page-header-banner text-center">
     <div class="container">
-        <h1 class="fw-bold">About Our Institute</h1>
-        <p class="lead text-white-50">{{ site_setting.tagline }}</p>
+        <div class="badge-pill-header mb-3">
+            <i class="fa-solid fa-graduation-cap text-primary"></i> About Smart LMS
+        </div>
+        <h1 class="display-5 fw-extrabold mb-2 text-white">About Our Institute</h1>
+        <p class="lead text-white-50 mx-auto mb-0" style="max-width: 650px;">{{ site_setting.tagline }}</p>
     </div>
 </div>
 
 <div class="container py-5">
     <div class="row g-5 align-items-center">
         <div class="col-lg-6">
-            <h6 class="text-primary fw-bold text-uppercase">Our Story & Mission</h6>
+            <span class="section-title-badge"><i class="fa-solid fa-bullseye me-1"></i> Our Story & Mission</span>
             <h2 class="fw-bold mb-3">Empowering Tech Aspirants with Hands-On Experience</h2>
             <p class="text-muted">
                 {{ site_setting.about_text }}
@@ -20,36 +24,36 @@
             <p class="text-muted">
                 Our curriculum bridges the gap between conventional academic degrees and demanding software industry standards. Through daily attendance, real tasks, code reviews, and mock interviews, our candidates transform into job-ready software professionals.
             </p>
-            <div class="row g-3 mt-2">
+            <div class="row g-3 mt-3">
                 <div class="col-6">
                     <div class="border-start border-primary border-4 ps-3">
-                        <h4 class="fw-bold text-dark mb-0">100%</h4>
+                        <h3 class="fw-bold text-dark mb-0">100%</h3>
                         <small class="text-muted">Practical Hands-on Modules</small>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="border-start border-success border-4 ps-3">
-                        <h4 class="fw-bold text-dark mb-0">50+</h4>
+                        <h3 class="fw-bold text-dark mb-0">50+</h3>
                         <small class="text-muted">Hiring Partner Companies</small>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card p-4 border-0 shadow-sm bg-light">
-                <h5 class="fw-bold mb-3"><i class="fa-solid fa-bullseye text-primary me-2"></i> Our Core Values</h5>
+            <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4">
+                <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-circle-check text-primary me-2"></i> Our Core Values</h5>
                 <ul class="list-unstyled mb-0">
-                    <li class="mb-3 d-flex align-items-start gap-2">
-                        <i class="fa-solid fa-circle-check text-success mt-1"></i>
-                        <div><strong>Industry Relevance:</strong> Training focused on in-demand Python, Django, MySQL, Frontend, and Cloud frameworks.</div>
+                    <li class="mb-3 d-flex align-items-start gap-3">
+                        <div class="kpi-icon primary flex-shrink-0" style="width: 38px; height: 38px; font-size: 1rem;"><i class="fa-solid fa-code"></i></div>
+                        <div><strong class="text-dark">Industry Relevance:</strong> <div class="text-muted small">Training focused on in-demand Python, Django, MySQL, Frontend, and Cloud frameworks.</div></div>
                     </li>
-                    <li class="mb-3 d-flex align-items-start gap-2">
-                        <i class="fa-solid fa-circle-check text-success mt-1"></i>
-                        <div><strong>Daily Rigor:</strong> 9:00 AM to 6:00 PM workflow mirroring real corporate software environments.</div>
+                    <li class="mb-3 d-flex align-items-start gap-3">
+                        <div class="kpi-icon success flex-shrink-0" style="width: 38px; height: 38px; font-size: 1rem;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div><strong class="text-dark">Daily Rigor:</strong> <div class="text-muted small">9:00 AM to 6:00 PM workflow mirroring real corporate software environments.</div></div>
                     </li>
-                    <li class="mb-3 d-flex align-items-start gap-2">
-                        <i class="fa-solid fa-circle-check text-success mt-1"></i>
-                        <div><strong>Authentic Credentialing:</strong> Tamper-proof certificate IDs and online QR code verification.</div>
+                    <li class="d-flex align-items-start gap-3">
+                        <div class="kpi-icon purple flex-shrink-0" style="width: 38px; height: 38px; font-size: 1rem;"><i class="fa-solid fa-award"></i></div>
+                        <div><strong class="text-dark">Authentic Credentialing:</strong> <div class="text-muted small">Tamper-proof certificate IDs and online QR code verification.</div></div>
                     </li>
                 </ul>
             </div>

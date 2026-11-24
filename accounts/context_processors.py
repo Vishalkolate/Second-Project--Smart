@@ -8,9 +8,9 @@ def global_context(request):
         setting = SystemSetting.objects.create(
             institute_name="Smart LMS & Internship Management System",
             tagline="Practical Learning & Industry Internship Platform",
-            email="contact@smartlms.edu",
+            email="a2zithub@smartlms.edu",
             phone="+91 98765 43210",
-            address="A2Z IT HUB Complex, Knowledge Park, Pune, Maharashtra 411057"
+            address="A2Z IT HUB Balikashram Rd, Bagade Mala, Ahilyanagar, Maharashtra 414003"
         )
     unread_count = 0
     if request.user.is_authenticated:

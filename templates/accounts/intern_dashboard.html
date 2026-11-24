@@ -99,23 +99,17 @@
 
         <!-- Quick Actions -->
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <a href="{% url 'daily_work_messages' %}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1">
+            <a href="{% url 'daily_work_messages' %}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-2">
                 <i class="fa-solid fa-comment-dots"></i> Add Message / Work Tracker
             </a>
-            <form method="POST" action="{% url 'quick_checkin' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1" title="Mark In-Office Attendance">
-                    <i class="fa-solid fa-right-to-bracket"></i> Punch In
-                </button>
-            </form>
-            <form method="POST" action="{% url 'quick_checkout' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1" title="Shift Punch Out">
-                    <i class="fa-solid fa-right-from-bracket"></i> Punch Out
-                </button>
-            </form>
-            <a href="{% url 'submit_daily_report' %}" class="btn btn-warning text-dark btn-sm rounded-pill px-3 shadow-sm">
+            <a href="{% url 'submit_daily_report' %}" class="btn btn-warning text-dark btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1">
                 <i class="fa-solid fa-file-pen me-1"></i> Submit 5:45 PM Report
+            </a>
+            <a href="{% url 'my_attendance' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1">
+                <i class="fa-solid fa-calendar-check me-1"></i> Attendance Calendar
+            </a>
+            <a href="{% url 'leave_apply' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1">
+                <i class="fa-solid fa-paper-plane me-1"></i> Apply Leave
             </a>
         </div>
     </div>
@@ -150,10 +144,12 @@
                             {% if today_tracking.work_start_time %}
                             <i class="fa-solid fa-circle-check text-success me-1"></i>{{ today_tracking.work_start_time|time:"H:i" }}
                             {% else %}
-                            <span class="text-muted small">09:37</span>
+                            <span class="text-muted small">Pending</span>
                             {% endif %}
                         </div>
-                        <small class="text-muted d-block" style="font-size: 0.72rem;">Desk Presence Verified</small>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">
+                            {% if today_tracking.work_start_time %}Desk Presence Verified{% else %}Start shift in Tracker{% endif %}
+                        </small>
                     </div>
                 </div>
 
@@ -239,27 +235,45 @@
     <!-- INTERN ATTENDANCE & PUNCTUALITY KPI ROW                        -->
     <!-- ============================================================== -->
     <div class="row g-3 mb-4">
-        <!-- KPI 1: Today Attendance -->
+        <!-- KPI 1: Today Attendance (Strictly Driven by Daily Work Messages) -->
         <div class="col-xl-3 col-md-6">
             <div class="intern-stat-card">
                 <div>
-                    <div class="stat-icon-wrapper bg-primary-subtle text-primary">
+                    <div class="stat-icon-wrapper {% if today_tracking.work_start_time %}bg-success-subtle text-success{% else %}bg-primary-subtle text-primary{% endif %}">
                         <i class="fa-solid fa-fingerprint"></i>
                     </div>
                     <div class="stat-label">Today's Shift Attendance</div>
-                    <div class="stat-val text-primary" style="font-size: 1.4rem;">
-                        {% if today_attendance and today_attendance.check_in %}
-                        {{ today_attendance.check_in|time:"h:i A" }}
+                    <div class="stat-val {% if today_tracking.work_start_time %}text-success{% else %}text-muted{% endif %}" style="font-size: 1.4rem;">
+                        {% if today_tracking.work_start_time %}
+                        {{ today_tracking.work_start_time|time:"h:i A" }}
                         {% else %}
-                        <span class="text-muted fs-6 fst-italic">Not Punched In</span>
+                        <span class="fs-6 fst-italic">Pending Work Start</span>
                         {% endif %}
                     </div>
                 </div>
                 <div class="mt-2 pt-2 border-top small text-muted d-flex justify-content-between align-items-center">
-                    <span>Checkout: {{ today_attendance.check_out|time:"h:i A"|default:"Pending" }}</span>
-                    {% if today_attendance %}
-                    <span class="badge badge-{{ today_attendance.status }} text-uppercase">{{ today_attendance.status }}</span>
+                    <span>
+                        Checkout: 
+                        {% if today_tracking.work_stop_time %}
+                            <strong class="text-dark">{{ today_tracking.work_stop_time|time:"h:i A" }}</strong>
+                        {% elif today_tracking.work_start_time %}
+                            <span class="text-primary fw-semibold">In Progress</span>
+                        {% else %}
+                            <span class="text-muted">Not Started</span>
+                        {% endif %}
+                    </span>
+                    {% if today_tracking.work_start_time %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle text-uppercase fw-bold">
+                        <i class="fa-solid fa-circle-check me-1"></i>PRESENT
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary-subtle text-muted border text-uppercase">
+                        ABSENT / PENDING
+                    </span>
                     {% endif %}
+                </div>
+                <div class="mt-1 pt-1 text-muted" style="font-size: 0.7rem;">
+                    <i class="fa-solid fa-shield-halved text-primary me-1"></i> Verified via Daily Work Messages
                 </div>
             </div>
         </div>

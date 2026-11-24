@@ -587,34 +587,26 @@
             </div>
             {% endif %}
 
-            <!-- Action buttons: Mark Attendance, Punch In/Out, Add Message -->
+            <!-- Action buttons: Add Message / Work Tracker & Status (No standalone Punch In/Out for Interns) -->
             <div class="d-flex align-items-center gap-2">
-                {% if not today_record or not today_record.check_in %}
-                <form method="POST" action="{% url 'quick_checkin' %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 fw-bold">
-                        <i class="fa-solid fa-right-to-bracket me-1"></i> Quick Punch In
-                    </button>
-                </form>
-                {% elif not today_record.check_out %}
-                <form method="POST" action="{% url 'quick_checkout' %}" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-warning text-dark btn-sm rounded-pill px-3 fw-bold">
-                        <i class="fa-solid fa-right-from-bracket me-1"></i> Quick Punch Out
-                    </button>
-                </form>
+                <a href="{% url 'daily_work_messages' %}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-comment-dots"></i> Add Message / Work Tracker
+                </a>
+                {% if today_record and today_record.check_in %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-circle-check me-1"></i> Present (In: {{ today_record.check_in|time:"h:i A" }}{% if today_record.check_out %} | Out: {{ today_record.check_out|time:"h:i A" }}{% endif %})
+                </span>
                 {% else %}
-                <span class="badge bg-success-subtle text-success border px-3 py-2 rounded-pill">
-                    <i class="fa-solid fa-circle-check me-1"></i> Today's Shift Completed
+                <span class="badge bg-secondary-subtle text-muted border px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-clock me-1"></i> Attendance: Awaiting Daily Work Start
                 </span>
                 {% endif %}
 
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
+                {% if is_staff %}
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
                     <i class="fa-solid fa-plus me-1"></i> Mark Attendance
                 </button>
-                <a href="{% url 'daily_work_messages' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
-                    <i class="fa-solid fa-comment-dots me-1"></i> Add Daily Message
-                </a>
+                {% endif %}
             </div>
         </div>
     </div>

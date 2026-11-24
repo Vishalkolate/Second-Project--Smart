@@ -2,17 +2,20 @@
 {% block title %}Explore Training Courses | {{ site_setting.institute_name }}{% endblock %}
 
 {% block content %}
-<div class="bg-primary text-white py-5">
+<!-- Page Hero Banner -->
+<div class="page-header-banner">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <span class="badge bg-white text-primary mb-2 px-3 py-1 rounded-pill fw-semibold">Industry-Ready Curricula</span>
-                <h1 class="fw-bold mb-2">Explore Training Courses</h1>
+                <div class="badge-pill-header mb-3">
+                    <i class="fa-solid fa-graduation-cap text-primary"></i> Industry-Ready Curricula
+                </div>
+                <h1 class="display-5 fw-extrabold mb-2 text-white">Explore Training Courses</h1>
                 <p class="lead text-white-50 mb-0">Master high-demand technical stacks with hands-on coding, live projects, and certified mentors.</p>
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <span class="badge bg-white-50 text-white p-2 px-3 rounded-pill">
-                    <i class="fa-solid fa-graduation-cap me-1"></i> {{ data.count }} Active Programs
+                <span class="badge bg-white bg-opacity-10 border border-white border-opacity-25 text-white p-2 px-3 rounded-pill">
+                    <i class="fa-solid fa-book-open me-1 text-primary"></i> {{ data.count }} Active Programs
                 </span>
             </div>
         </div>
@@ -40,7 +43,7 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-semibold shadow-sm">
                             <i class="fa-solid fa-filter me-1"></i> Filter
                         </button>
                     </div>
@@ -54,64 +57,97 @@
     <div class="row g-4">
         {% for c in data %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 card-hover overflow-hidden border-0 shadow-sm rounded-4 d-flex flex-column">
-                <!-- Course Thumbnail -->
-                <div class="position-relative overflow-hidden" style="height: 200px; background-color: #f1f5f9;">
+            <div class="course-card-premium">
+                <!-- Thumbnail with Badges & Play Icon Overlay -->
+                <div class="course-thumb-wrapper">
                     {% if c.thumbnail %}
-                    <img src="{{ c.thumbnail.url }}" alt="{{ c.course_name }}" class="w-100 h-100" style="object-fit: cover;">
+                    <img src="{{ c.thumbnail.url }}" alt="{{ c.course_name }}">
                     {% else %}
-                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-primary bg-primary-subtle">
+                    <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
                         <i class="fa-solid fa-laptop-code fa-3x mb-2 text-primary opacity-75"></i>
-                        <span class="small fw-semibold text-muted">{{ c.category.category_name|default:'Software Engineering' }}</span>
+                        <span class="small fw-semibold text-white-50">{{ c.category.category_name|default:'Software Engineering' }}</span>
                     </div>
                     {% endif %}
-                    <span class="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 text-white backdrop-blur">
-                        <i class="fa-regular fa-clock me-1"></i> {{ c.course_duration }}
+                    <div class="course-thumb-overlay"></div>
+                    <a href="{% url 'course_detail' c.id %}" class="course-play-hover-btn" title="View Syllabus">
+                        <i class="fa-solid fa-play ms-1"></i>
+                    </a>
+
+                    <!-- Level Badge -->
+                    <span class="course-badge-level {% if c.level == 'Advanced' %}advanced{% elif c.level == 'Intermediate' %}intermediate{% else %}beginner{% endif %}">
+                        {{ c.level|default:'All Levels' }}
                     </span>
-                    <span class="position-absolute top-0 end-0 m-3 badge bg-primary text-white shadow-sm">
-                        {{ c.level }}
+
+                    <!-- Duration Badge -->
+                    <span class="course-badge-duration">
+                        <i class="fa-regular fa-clock text-warning"></i> {{ c.course_duration|default:'6 Months' }}
                     </span>
                 </div>
 
-                <div class="card-body p-4 d-flex flex-column">
+                <!-- Card Body Details -->
+                <div class="course-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
-                            {{ c.category.category_name|default:'General' }}
+                        <span class="course-category-tag">
+                            <i class="fa-solid fa-code me-1"></i>{{ c.category.category_name|default:'Engineering' }}
                         </span>
-                        <h5 class="fw-bold text-success mb-0">₹{{ c.course_fees }}</h5>
+                        <div class="d-flex align-items-center gap-1 text-warning small">
+                            <i class="fa-solid fa-star"></i>
+                            <span class="fw-bold text-dark ms-1">4.9</span>
+                            <span class="text-muted" style="font-size: 0.72rem;">(1.2k)</span>
+                        </div>
                     </div>
 
-                    <h5 class="fw-bold text-dark mb-2">
-                        <a href="{% url 'course_detail' c.id %}" class="text-dark text-decoration-none hover-primary">
+                    <h5 class="course-title">
+                        <a href="{% url 'course_detail' c.id %}" class="text-dark text-decoration-none">
                             {{ c.course_name }}
                         </a>
                     </h5>
 
-                    <p class="text-muted small flex-grow-1">
-                        {{ c.course_description|truncatewords:18 }}
+                    <p class="course-desc">
+                        {{ c.course_description|truncatewords:18|default:'Comprehensive hands-on technical curricula, live instructor assistance, and verified certification.' }}
                     </p>
 
-                    <div class="pt-3 border-top mt-3 d-flex align-items-center justify-content-between">
-                        <div class="small text-muted d-flex align-items-center gap-1">
-                            <i class="fa-solid fa-chalkboard-user text-secondary"></i>
-                            <span class="text-truncate" style="max-width: 140px;">
-                                {% if c.instructor %}
-                                    {{ c.instructor.get_full_name|default:c.instructor.username }}
-                                {% else %}
-                                    Senior Faculty
-                                {% endif %}
+                    <!-- Instructor Row -->
+                    <div class="d-flex align-items-center justify-content-between small text-muted mb-3 pt-2 border-top">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 0.75rem;">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <span class="fw-semibold text-dark text-truncate" style="max-width: 140px;">
+                                {% if c.instructor %}{{ c.instructor.get_full_name|default:c.instructor.username }}{% else %}Senior Faculty{% endif %}
                             </span>
                         </div>
-                        <a href="{% url 'course_detail' c.id %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold">
-                            View Syllabus <i class="fa-solid fa-arrow-right ms-1"></i>
-                        </a>
+                        <span class="badge bg-light text-secondary border">
+                            <i class="fa-solid fa-layer-group text-primary me-1"></i> Certified Track
+                        </span>
                     </div>
+
+                    <!-- Highlights Pills -->
+                    <div class="course-meta-pills">
+                        <span class="course-meta-pill">
+                            <i class="fa-solid fa-laptop-code text-primary"></i> Live Projects
+                        </span>
+                        <span class="course-meta-pill">
+                            <i class="fa-solid fa-certificate text-success"></i> QR Verified
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Footer Pricing & Action -->
+                <div class="course-footer-cta">
+                    <div>
+                        <span class="small text-muted d-block" style="font-size: 0.74rem;">Curriculum Fee</span>
+                        <span class="course-price-amount">₹{{ c.course_fees }}</span>
+                    </div>
+                    <a href="{% url 'course_detail' c.id %}" class="btn-course-cta">
+                        View Syllabus <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <div class="py-5">
+            <div class="py-5 bg-white rounded-4 border">
                 <i class="fa-solid fa-book-open fa-3x text-muted mb-3 d-block"></i>
                 <h5 class="text-muted fw-bold">No courses found matching your criteria.</h5>
                 <p class="text-muted small">Try adjusting your keyword search or filter by different categories.</p>

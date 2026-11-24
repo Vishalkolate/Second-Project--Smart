@@ -1,10 +1,17 @@
 {% extends 'base/base.html' %}
-{% block title %}Document Verification | Smart LMS{% endblock %}
+{% block title %}Internship Documents & Verification | Smart LMS{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h4 class="fw-bold mb-1">Student Document Verification</h4>
-    <small class="text-muted">Verify academic certificates, identity documents, and college NOCs</small>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">
+            <i class="fa-solid fa-id-card text-primary me-2"></i> Document Verification & Submissions
+        </h4>
+        <small class="text-muted">Manage college NOCs, identity proofs, resumes, and academic certificates</small>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
+        <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload Document
+    </button>
 </div>
 
 <div class="card border-0 shadow-sm overflow-hidden">
@@ -23,34 +30,86 @@
             <tbody>
                 {% for d in documents %}
                 <tr>
-                    <td class="fw-semibold">{{ d.student.get_full_name|default:d.student.username }}</td>
-                    <td>{{ d.document_type }}</td>
+                    <td class="fw-semibold">
+                        <i class="fa-solid fa-user-circle text-secondary me-1"></i>
+                        {{ d.student.get_full_name|default:d.student.username }}
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ d.document_type }}</span></td>
                     <td>{{ d.uploaded_at|date:'Y-m-d H:i' }}</td>
                     <td>
                         {% if d.verification_status == 'Verified' %}
-                        <span class="badge bg-success">Verified</span>
+                        <span class="badge bg-success"><i class="fa-solid fa-check-circle me-1"></i> Verified</span>
                         {% elif d.verification_status == 'Rejected' %}
-                        <span class="badge bg-danger">Rejected</span>
+                        <span class="badge bg-danger"><i class="fa-solid fa-circle-xmark me-1"></i> Rejected</span>
                         {% else %}
-                        <span class="badge bg-warning text-dark">Pending</span>
+                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Pending</span>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ d.document_file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill py-0">View Doc</a>
+                        {% if d.document_file %}
+                        <a href="{{ d.document_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2">
+                            <i class="fa-regular fa-file-lines me-1"></i> View Doc
+                        </a>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
                     </td>
                     <td>
+                        {% if is_staff %}
                         <form method="POST" action="{% url 'verify_document' d.id %}" class="d-flex gap-1">
                             {% csrf_token %}
-                            <button type="submit" name="status" value="Verified" class="btn btn-sm btn-success rounded-pill py-0">Verify</button>
-                            <button type="submit" name="status" value="Rejected" class="btn btn-sm btn-danger rounded-pill py-0">Reject</button>
+                            <button type="submit" name="status" value="Verified" class="btn btn-sm btn-success rounded-pill py-0 px-2" title="Mark as Verified">Verify</button>
+                            <button type="submit" name="status" value="Rejected" class="btn btn-sm btn-danger rounded-pill py-0 px-2" title="Mark as Rejected">Reject</button>
                         </form>
+                        {% else %}
+                        <span class="text-muted small">Submitted</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" class="text-center py-4 text-muted">No documents pending verification.</td></tr>
+                <tr><td colspan="6" class="text-center py-4 text-muted">No documents uploaded yet. Click "+ Upload Document" above to submit.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- MODAL: UPLOAD DOCUMENT -->
+<div class="modal fade" id="uploadDocModal" tabindex="-1" aria-labelledby="uploadDocModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h6 class="modal-title fw-bold" id="uploadDocModalLabel">
+                    <i class="fa-solid fa-file-arrow-up text-primary me-2"></i> Upload Verification Document
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'upload_document' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Document Type</label>
+                        <select name="document_type" class="form-select form-select-sm" required>
+                            <option value="College NOC">College NOC / Permission Letter</option>
+                            <option value="Aadhar / Govt Photo ID">Aadhar Card / Govt Photo ID</option>
+                            <option value="College ID Card">College ID Card</option>
+                            <option value="Resume / CV">Resume / CV</option>
+                            <option value="Degree / Marksheet">Degree / Previous Marksheet</option>
+                            <option value="NDA / Security Deposit Agreement">NDA / Security Deposit Agreement</option>
+                            <option value="Other">Other Certificate / Document</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Choose File (PDF, PNG, JPG)</label>
+                        <input type="file" name="document_file" class="form-control form-control-sm" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Upload Document</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

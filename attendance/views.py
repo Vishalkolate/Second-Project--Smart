@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from accounts.decorators import role_required
@@ -96,6 +97,40 @@ def get_current_time(request=None):
                 except ValueError:
                     pass
     return timezone.localtime(timezone.now()).time()
+
+
+@login_required
+@require_POST
+def student_self_attendance(request):
+    today = timezone.localdate()
+    student_id = request.POST.get('student_id') or request.GET.get('student_id')
+    is_staff = request.user.is_superuser or request.user.role in ['super_admin', 'admin', 'hr', 'trainer']
+    
+    if is_staff and student_id:
+        target_student = User.objects.filter(id=student_id).first() or request.user
+    elif is_staff and request.user.role in ['super_admin', 'admin']:
+        target_student = User.objects.filter(role='student').first() or request.user
+    else:
+        target_student = request.user
+
+    att, created = Attendance.objects.get_or_create(
+        student=target_student,
+        attendance_date=today,
+        defaults={
+            'status': 'present',
+            'remarks': 'Self Marked Present'
+        }
+    )
+    if not created:
+        att.status = 'present'
+        if not att.remarks:
+            att.remarks = 'Self Marked Present'
+        att.save()
+
+    display_name = target_student.get_full_name() or target_student.username
+    messages.success(request, f'Attendance marked as PRESENT for {display_name} today ({today.strftime("%d %b %Y")})!')
+    referer = request.META.get('HTTP_REFERER')
+    return redirect(referer if referer else '/student-dashboard/')
 
 
 @login_required
@@ -223,6 +258,28 @@ def intern_attendance_view(request):
             v_user = User.objects.filter(role='intern').first() or User.objects.filter(username='vishal').first()
             if v_user:
                 target_user = v_user
+
+    # Synchronize Attendance strictly from Daily Work Messages for Interns
+    try:
+        from internships.models import DailyWorkTracking
+        trackings = DailyWorkTracking.objects.filter(
+            student=target_user,
+            date__year=year,
+            date__month=month,
+            work_start_time__isnull=False
+        )
+        for t in trackings:
+            Attendance.objects.update_or_create(
+                student=target_user,
+                attendance_date=t.date,
+                defaults={
+                    'status': 'present',
+                    'check_in': t.work_start_time,
+                    'check_out': t.work_stop_time
+                }
+            )
+    except Exception:
+        pass
 
     month_records = Attendance.objects.filter(
         student=target_user,
@@ -366,6 +423,7 @@ def my_attendance(request):
     return intern_attendance_view(request)
 
 
+@csrf_exempt
 @login_required
 def mark_lecture_attendance(request):
     if request.method == 'POST':
@@ -501,25 +559,103 @@ def export_attendance_excel(request):
     return response
 
 
-# Leave Management
+# Leave Management & Application Portal
+@csrf_exempt
 @login_required
 def leave_apply(request):
-    if request.method == 'POST':
-        from_date = request.POST.get('from_date')
-        to_date = request.POST.get('to_date')
-        reason = request.POST.get('leave_reason')
+    today = timezone.localdate()
+    window_start = today - timedelta(days=90)
+    window_end = today
+    window_text = f"Window: {window_start.strftime('%d %b')} – {window_end.strftime('%d %b %Y')}"
 
-        LeaveRequest.objects.create(
+    # Rolling 90-day balance calculations
+    user_leaves = LeaveRequest.objects.filter(student=request.user)
+    user_leaves_90d = user_leaves.filter(from_date__gte=window_start)
+
+    full_leaves_count = user_leaves_90d.filter(leave_type='full_day').count()
+    half_leaves_count = user_leaves_90d.filter(leave_type__in=['half_day_morning', 'half_day_afternoon']).count()
+    total_used = round(float((full_leaves_count * 1.0) + (half_leaves_count * 0.5)), 1)
+    remaining_balance = round(max(0.0, 6.0 - total_used), 1)
+
+    # Active batch info
+    from internships.models import InternshipEnrollment
+    enrollment = InternshipEnrollment.objects.filter(student=request.user).select_related('batch').first()
+    batch_name = enrollment.batch.batch_name if (enrollment and enrollment.batch) else 'A2Z-IP-Corporate'
+    batch_timing = "09:00 AM → 06:00 PM"
+
+    if request.method == 'POST':
+        leave_date_str = request.POST.get('leave_date') or request.POST.get('from_date')
+        leave_type = request.POST.get('leave_type', 'full_day')
+        category = request.POST.get('category', 'Casual Leave')
+        billable_type = request.POST.get('billable_type', 'Unpaid Leave')
+        reason = request.POST.get('leave_reason', '').strip()
+
+        parsed_date = today
+        if leave_date_str:
+            for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y'):
+                try:
+                    parsed_date = datetime.strptime(leave_date_str.strip(), fmt).date()
+                    break
+                except ValueError:
+                    pass
+
+        # Compute times & durations based on Daily Corporate Schedule (09:00 AM - 06:00 PM)
+        from decimal import Decimal
+        from datetime import time as dt_time
+        if leave_type == 'half_day_morning':
+            f_time = dt_time(9, 0)
+            t_time = dt_time(13, 30)
+            dur_hr = Decimal('4.5')
+            l_val = Decimal('0.5')
+        elif leave_type in ['half_day_afternoon', 'half_day_evening']:
+            leave_type = 'half_day_afternoon'
+            f_time = dt_time(13, 30)
+            t_time = dt_time(18, 0)
+            dur_hr = Decimal('4.5')
+            l_val = Decimal('0.5')
+        else:
+            leave_type = 'full_day'
+            f_time = dt_time(9, 0)
+            t_time = dt_time(18, 0)
+            dur_hr = Decimal('9.0')
+            l_val = Decimal('1.0')
+
+        req = LeaveRequest.objects.create(
             student=request.user,
-            from_date=from_date,
-            to_date=to_date,
+            from_date=parsed_date,
+            to_date=parsed_date,
+            leave_type=leave_type,
+            category=category,
+            billable_type=billable_type,
+            from_time=f_time,
+            to_time=t_time,
+            duration_hours=dur_hr,
+            leave_value=l_val,
             leave_reason=reason,
             approval_status='pending'
         )
-        AuditLog.objects.create(user=request.user, action="Applied for Leave", module="Attendance", record_id=str(request.user.id))
-        messages.success(request, 'Leave request submitted! Admin/HR will review and verify your request.')
-        return redirect('my_attendance')
-    return render(request, 'attendance/leave_apply.html')
+        AuditLog.objects.create(
+            user=request.user,
+            action="Applied for Leave",
+            module="Attendance",
+            record_id=str(req.id)
+        )
+        messages.success(request, f'Leave application submitted for {parsed_date.strftime("%d %b %Y")} ({req.get_leave_type_display()})! Mentors will review shortly.')
+        return redirect('leave_apply')
+
+    my_leaves = user_leaves.order_by('-from_date')[:20]
+
+    return render(request, 'attendance/leave_apply.html', {
+        'today': today,
+        'window_text': window_text,
+        'full_leaves_count': full_leaves_count,
+        'half_leaves_count': half_leaves_count,
+        'total_used': total_used,
+        'remaining_balance': remaining_balance,
+        'batch_name': batch_name,
+        'batch_timing': batch_timing,
+        'my_leaves': my_leaves,
+    })
 
 
 @role_required('super_admin', 'admin', 'hr', 'trainer')

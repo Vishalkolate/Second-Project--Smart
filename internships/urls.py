@@ -22,5 +22,6 @@ urlpatterns = [
     path('daily-work/start/', views.work_start_action, name='work_start_action'),
     path('daily-work/break/<str:break_type>/<str:action>/', views.break_action, name='break_action'),
     path('daily-work/stop/', views.work_stop_action, name='work_stop_action'),
+    path('daily-work/reset/', views.reset_day_action, name='reset_day_action'),
     path('daily-work/logs/', views.work_tracking_logs, name='work_tracking_logs'),
 ]

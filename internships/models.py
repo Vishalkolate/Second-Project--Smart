@@ -241,6 +241,9 @@ class DailyWorkTracking(models.Model):
     work_stop_photo = models.ImageField(upload_to='work_tracking/stop/', null=True, blank=True)
     work_stop_remarks = models.TextField(blank=True)
 
+    # Daily Custom Message / Status
+    daily_message = models.TextField(blank=True, default='')
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

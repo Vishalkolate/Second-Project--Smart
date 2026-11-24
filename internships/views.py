@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, time as dt_time
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.http import JsonResponse
@@ -208,23 +209,32 @@ def batch_create(request):
     return redirect('batch_list')
 
 
-# Documents Verification
-@role_required('super_admin', 'admin', 'hr')
+# Documents Verification & Upload
+@login_required
 def document_list(request):
-    docs = InternshipDocument.objects.select_related('student', 'verified_by').all()
-    return render(request, 'internships/documents.html', {'documents': docs})
+    user = request.user
+    is_staff = user.is_superuser or user.role in ['super_admin', 'admin', 'hr', 'trainer']
+    if is_staff:
+        docs = InternshipDocument.objects.select_related('student', 'verified_by').all().order_by('-uploaded_at')
+    else:
+        docs = InternshipDocument.objects.filter(student=user).select_related('verified_by').order_by('-uploaded_at')
+    return render(request, 'internships/documents.html', {
+        'documents': docs,
+        'is_staff': is_staff,
+    })
 
 
+@csrf_exempt
 @login_required
 def upload_document(request):
     if request.method == 'POST' and 'document_file' in request.FILES:
-        InternshipDocument.objects.create(
+        doc = InternshipDocument.objects.create(
             student=request.user,
-            document_type=request.POST.get('document_type'),
+            document_type=request.POST.get('document_type', 'Other'),
             document_file=request.FILES['document_file']
         )
-        messages.success(request, 'Document submitted for verification.')
-    return redirect('my_internship')
+        messages.success(request, f'Document ({doc.document_type}) submitted successfully for verification!')
+    return redirect('internship_documents')
 
 
 @role_required('super_admin', 'admin', 'hr')
@@ -302,18 +312,26 @@ def daily_work_messages(request):
         date=selected_date
     )
 
-    # Initialize baseline work start matching screenshot if not yet set for today
-    if created and selected_date == today and not tracking.work_start_time:
-        tracking.work_start_time = dt_time(9, 37)
-        tracking.work_expected_end_time = dt_time(18, 7)
+    # Handle saving daily message / status note
+    if request.method == 'POST' and 'save_daily_message' in request.POST:
+        tracking.daily_message = request.POST.get('daily_message', '').strip()
         tracking.save()
+        messages.success(request, f'Daily message recorded for {selected_date.strftime("%d %b %Y")}!')
+        return redirect(f"/internships/daily-work-messages/?date={selected_date.strftime('%Y-%m-%d')}&student_id={target_student.id}")
 
-    history = DailyWorkTracking.objects.filter(student=target_student).order_by('-date')[:10]
+    prev_date = selected_date - timedelta(days=1)
+    next_date = selected_date + timedelta(days=1)
+    is_today = (selected_date == today)
+
+    history = DailyWorkTracking.objects.filter(student=target_student).order_by('-date')[:15]
 
     return render(request, 'internships/daily_work_messages.html', {
         'tracking': tracking,
         'today': today,
         'selected_date': selected_date,
+        'prev_date': prev_date,
+        'next_date': next_date,
+        'is_today': is_today,
         'target_student': target_student,
         'all_students': all_students,
         'is_staff': is_staff,
@@ -321,6 +339,7 @@ def daily_work_messages(request):
     })
 
 
+@csrf_exempt
 @login_required
 def work_start_action(request):
     today = timezone.localdate()
@@ -345,11 +364,9 @@ def work_start_action(request):
         student=target_student,
         date=target_date
     )
-    if not tracking.work_start_time:
-        tracking.work_start_time = now_time
-        # Expected end time: +8.5 hours (e.g. 09:37 -> 18:07)
-        expected_dt = now_dt + timedelta(hours=8, minutes=30)
-        tracking.work_expected_end_time = expected_dt.time()
+    tracking.work_start_time = now_time
+    expected_dt = now_dt + timedelta(hours=8, minutes=30)
+    tracking.work_expected_end_time = expected_dt.time()
 
     if 'photo' in request.FILES:
         tracking.work_start_photo = request.FILES['photo']
@@ -359,6 +376,9 @@ def work_start_action(request):
             _, encoded = data_uri.split(',', 1)
             img_data = base64.b64decode(encoded)
             tracking.work_start_photo.save(f"start_{target_student.id}_{target_date}.jpg", ContentFile(img_data), save=False)
+
+    if request.POST.get('daily_message'):
+        tracking.daily_message = request.POST.get('daily_message').strip()
 
     tracking.save()
 
@@ -381,13 +401,62 @@ def work_start_action(request):
             'status': 'success',
             'message': msg,
             'start_time': tracking.work_start_time.strftime("%H:%M"),
-            'expected_end_time': tracking.work_expected_end_time.strftime("%H:%M") if tracking.work_expected_end_time else '18:07'
+            'expected_end_time': tracking.work_expected_end_time.strftime("%H:%M") if tracking.work_expected_end_time else ''
         })
 
-    referer = request.META.get('HTTP_REFERER')
-    return redirect(referer if referer else 'daily_work_messages')
+    return redirect(f"/internships/daily-work-messages/?date={target_date.strftime('%Y-%m-%d')}&student_id={target_student.id}")
 
 
+@csrf_exempt
+@login_required
+def reset_day_action(request):
+    today = timezone.localdate()
+    target_date = today
+    date_param = request.POST.get('date') or request.GET.get('date')
+    if date_param:
+        try:
+            target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        except ValueError:
+            target_date = today
+
+    is_staff = request.user.is_superuser or request.user.role in ['super_admin', 'admin', 'hr', 'trainer']
+    student_id = request.POST.get('student_id') or request.GET.get('student_id')
+    target_student = request.user
+    if is_staff and student_id:
+        target_student = User.objects.filter(id=student_id).first() or request.user
+
+    tracking = DailyWorkTracking.objects.filter(student=target_student, date=target_date).first()
+    if tracking:
+        tracking.work_start_time = None
+        tracking.work_expected_end_time = None
+        tracking.work_start_photo = None
+        tracking.morning_tea_start = None
+        tracking.morning_tea_end = None
+        tracking.no_morning_tea = False
+        tracking.lunch_start = None
+        tracking.lunch_end = None
+        tracking.evening_tea_start = None
+        tracking.evening_tea_end = None
+        tracking.no_evening_tea = False
+        tracking.work_stop_time = None
+        tracking.work_stop_photo = None
+        tracking.work_stop_remarks = ''
+        tracking.daily_message = ''
+        tracking.save()
+
+        # Also reset Attendance for this date so daily message drives attendance state cleanly
+        try:
+            from attendance.models import Attendance
+            Attendance.objects.filter(student=target_student, attendance_date=target_date).delete()
+        except Exception:
+            pass
+
+        messages.info(request, f'Daily messages reset for {target_date.strftime("%d %b %Y")}. You can start fresh!')
+
+    return redirect(f"/internships/daily-work-messages/?date={target_date.strftime('%Y-%m-%d')}&student_id={target_student.id}")
+
+
+@csrf_exempt
 @login_required
 def break_action(request, break_type, action):
     today = timezone.localdate()
@@ -410,8 +479,9 @@ def break_action(request, break_type, action):
 
     # Ensure work start is recorded if not yet set
     if not tracking.work_start_time:
-        tracking.work_start_time = dt_time(9, 37)
-        tracking.work_expected_end_time = dt_time(18, 7)
+        tracking.work_start_time = now_time
+        expected_dt = timezone.localtime(timezone.now()) + timedelta(hours=8, minutes=30)
+        tracking.work_expected_end_time = expected_dt.time()
         try:
             from attendance.models import Attendance
             Attendance.objects.update_or_create(
@@ -479,9 +549,10 @@ def break_action(request, break_type, action):
         })
 
     referer = request.META.get('HTTP_REFERER')
-    return redirect(referer if referer else 'daily_work_messages')
+    return redirect(f"/internships/daily-work-messages/?date={target_date.strftime('%Y-%m-%d')}&student_id={target_student.id}")
 
 
+@csrf_exempt
 @login_required
 def work_stop_action(request):
     today = timezone.localdate()
@@ -502,10 +573,10 @@ def work_stop_action(request):
     now_time = get_current_time(request)
     tracking, _ = DailyWorkTracking.objects.get_or_create(student=target_student, date=target_date)
 
-    # If work was not explicitly started today, set a default morning start time (e.g. 09:37)
+    # If work was not explicitly started today, record start time as now_time
     if not tracking.work_start_time:
-        tracking.work_start_time = dt_time(9, 37)
-        tracking.work_expected_end_time = dt_time(18, 7)
+        tracking.work_start_time = now_time
+        tracking.work_expected_end_time = (timezone.localtime(timezone.now()) + timedelta(hours=8, minutes=30)).time()
 
     tracking.work_stop_time = now_time
     if request.method == 'POST':
@@ -547,7 +618,7 @@ def work_stop_action(request):
         })
 
     referer = request.META.get('HTTP_REFERER')
-    return redirect(referer if referer else 'daily_work_messages')
+    return redirect(f"/internships/daily-work-messages/?date={target_date.strftime('%Y-%m-%d')}&student_id={target_student.id}")
 
 
 @role_required('super_admin', 'admin', 'hr', 'trainer', 'team_leader')

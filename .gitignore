@@ -13,3 +13,4 @@ myenv/
 db.sqlite3
 media/
 staticfiles/
+scratch/

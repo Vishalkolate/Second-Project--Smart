@@ -2,37 +2,65 @@
 {% block title %}Internship Programs | {{ site_setting.institute_name }}{% endblock %}
 
 {% block content %}
-<div class="bg-light py-5 border-bottom">
-    <div class="container text-center">
-        <h1 class="fw-bold mb-2">Practical Industry Internship Programs</h1>
-        <p class="text-muted">Work on real projects, daily sprint schedules, and graduate with certified experience.</p>
+<!-- Page Hero Banner -->
+<div class="page-header-banner text-center">
+    <div class="container">
+        <div class="badge-pill-header mb-3">
+            <i class="fa-solid fa-briefcase text-primary"></i> Real Industry Experience
+        </div>
+        <h1 class="display-5 fw-extrabold mb-2 text-white">Practical Industry Internship Programs</h1>
+        <p class="lead text-white-50 mx-auto mb-0" style="max-width: 650px;">Work on real client projects, follow daily sprint workflows, and graduate with verified experience credentials.</p>
     </div>
 </div>
 
 <div class="container py-5">
     <div class="row g-4">
         {% for prog in programs %}
-        <div class="col-md-4">
-            <div class="card h-100 card-hover p-4 border bg-white d-flex flex-column">
+        <div class="col-md-6 col-lg-4">
+            <div class="internship-card-premium">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge bg-primary-subtle text-primary px-3 py-1 rounded-pill fw-bold">{{ prog.technology }}</span>
-                    <small class="text-muted"><i class="fa-regular fa-clock me-1"></i> {{ prog.duration_days }} Days</small>
+                    <span class="internship-tech-badge">
+                        <i class="fa-brands fa-react text-success"></i> {{ prog.technology|default:'Full Stack' }}
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill py-1 px-2" style="font-size: 0.72rem;">
+                        <span class="status-dot-pulse me-1"></span> Hiring Active
+                    </span>
                 </div>
-                <h5 class="fw-bold text-dark">{{ prog.program_name }}</h5>
-                <p class="text-muted small flex-grow-1">{{ prog.description|truncatewords:22 }}</p>
-                <div class="bg-light p-3 rounded-3 mb-3 small">
-                    <div><strong>Eligibility:</strong> {{ prog.eligibility|truncatewords:7 }}</div>
-                    <div><strong>Start Date:</strong> {{ prog.start_date }}</div>
-                    <div><strong>Deadline:</strong> <span class="text-danger fw-bold">{{ prog.application_deadline }}</span></div>
+
+                <h5 class="fw-bold text-dark mb-2">{{ prog.program_name }}</h5>
+                <p class="text-muted small flex-grow-1 mb-3">{{ prog.description|truncatewords:20 }}</p>
+
+                <div class="internship-specs-box">
+                    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                        <span class="text-muted"><i class="fa-regular fa-clock me-1 text-primary"></i> Duration:</span>
+                        <strong class="text-dark">{{ prog.duration_days }} Days Intensive</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                        <span class="text-muted"><i class="fa-solid fa-user-graduate me-1 text-success"></i> Eligibility:</span>
+                        <strong class="text-dark">{{ prog.eligibility|truncatewords:4|default:'Degree / BTech' }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted"><i class="fa-regular fa-calendar-xmark me-1 text-danger"></i> Deadline:</span>
+                        <span class="text-danger fw-semibold">{{ prog.application_deadline }}</span>
+                    </div>
                 </div>
+
                 <div class="d-flex gap-2">
-                    <a href="{% url 'internship_detail' prog.id %}" class="btn btn-outline-primary w-50 rounded-pill">Details</a>
-                    <a href="{% url 'apply_internship' prog.id %}" class="btn btn-primary w-50 rounded-pill">Apply Now</a>
+                    <a href="{% url 'internship_detail' prog.id %}" class="btn btn-outline-primary w-50 rounded-pill fw-semibold">
+                        Details
+                    </a>
+                    <a href="{% url 'apply_internship' prog.id %}" class="btn btn-primary w-50 rounded-pill fw-semibold shadow-sm">
+                        Apply Now <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="col-12 text-center py-5 text-muted">No active internship openings right now.</div>
+        <div class="col-12 text-center py-5 bg-white rounded-4 border text-muted">
+            <i class="fa-solid fa-briefcase fa-3x mb-3 text-secondary d-block"></i>
+            <h5 class="fw-bold text-dark">No active internship openings right now</h5>
+            <p class="text-muted small">New cohort openings will be announced soon.</p>
+        </div>
         {% endfor %}
     </div>
 </div>

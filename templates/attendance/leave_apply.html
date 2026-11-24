@@ -1,36 +1,608 @@
 {% extends 'base/base.html' %}
-{% block title %}Apply for Leave | Smart LMS{% endblock %}
+{% block title %}Leave Management | Smart LMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Styling matching Smart LMS Master Design System */
+    .leave-page-title {
+        font-size: 1.65rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 2px;
+    }
+    .leave-page-sub {
+        color: #64748b;
+        font-size: 0.92rem;
+        margin-bottom: 20px;
+    }
+
+    /* Top KPI Metric Box */
+    .leave-kpi-banner {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        border-top: 4px solid var(--primary);
+        padding: 22px 28px;
+        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+        margin-bottom: 24px;
+    }
+    .kpi-col-label {
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .kpi-col-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+    .kpi-window-text {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Main Apply Card */
+    .apply-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        padding: 26px 28px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+    .apply-card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+    .apply-card-sub {
+        color: #64748b;
+        font-size: 0.88rem;
+        margin-bottom: 22px;
+    }
+
+    .form-field-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 6px;
+    }
+
+    /* Selectable Leave Type Cards - Project Master Palette */
+    .leave-type-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .leave-type-card {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        background-color: #ffffff;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: left;
+    }
+    .leave-type-card:hover {
+        border-color: #93c5fd;
+        background-color: #f8fafc;
+        transform: translateY(-1px);
+    }
+    .leave-type-card.active {
+        border-color: var(--primary);
+        background-color: var(--primary-light);
+        box-shadow: 0 0 0 1px var(--primary);
+    }
+    .leave-type-title {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: #0f172a;
+        margin-bottom: 2px;
+    }
+    .leave-type-card.active .leave-type-title {
+        color: var(--primary);
+    }
+    .leave-type-desc {
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    /* Royal Blue Gradient Preview Box */
+    .duration-preview-box {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%);
+        color: #ffffff;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin: 20px 0;
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.22);
+    }
+    .duration-preview-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        opacity: 0.85;
+        margin-bottom: 4px;
+    }
+    .duration-preview-time {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+    .duration-preview-hrs {
+        font-size: 0.9rem;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    /* Right Sidebar: Midnight Navy Batch Timing Card */
+    .batch-timing-card {
+        background: linear-gradient(135deg, #090d16 0%, #0f172a 45%, #1e3a8a 100%);
+        color: #ffffff;
+        border-radius: 18px;
+        padding: 22px 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+    .batch-timing-card::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        right: -20%;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .batch-timing-header {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: #38bdf8;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .batch-name-badge {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .batch-hours-text {
+        font-size: 1.45rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: #60a5fa;
+    }
+    .batch-timing-note {
+        font-size: 0.82rem;
+        color: #94a3b8;
+        line-height: 1.4;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        padding: 22px 24px;
+        box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+    }
+    .summary-card-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.92rem;
+    }
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    .summary-item-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+    .summary-item-val {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* Submit Button */
+    .btn-apply-submit {
+        background: var(--gradient-primary);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1rem;
+        border-radius: 30px;
+        padding: 10px 28px;
+        border: none;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-apply-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.42);
+        color: #ffffff;
+    }
+
+    /* Floating launcher */
+    .floating-launcher-btn {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--primary);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        cursor: pointer;
+        z-index: 999;
+        transition: all 0.2s ease;
+    }
+    .floating-launcher-btn:hover {
+        transform: scale(1.08);
+        background: var(--primary-hover);
+        color: #ffffff;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h4 class="fw-bold mb-1">Submit Leave Application</h4>
-    <small class="text-muted">Request official leave approval from institute mentors</small>
-</div>
+<div class="container-fluid px-0">
+    <!-- Top Header Banner -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-4 border shadow-sm">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small fw-semibold">
+                    <i class="fa-solid fa-umbrella-beach me-1"></i> Time-Off & Attendance Management
+                </span>
+                <span class="badge bg-light text-secondary border px-2 py-1 small">
+                    <i class="fa-solid fa-circle-info text-info me-1"></i> Rolling 90-Day Policy
+                </span>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Leave Management Portal</h3>
+            <p class="text-muted small mb-0">Max 6 leaves in rolling 90 days &bull; Full Day = 1.0 &bull; Half Day = 0.5</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4 btn-sm fw-semibold shadow-xs" data-bs-toggle="modal" data-bs-target="#leaveHistoryModal">
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> My Leave History
+            </button>
+            <a href="{% url 'daily_work_messages' %}" class="btn btn-primary rounded-pill px-3 btn-sm fw-semibold shadow-xs">
+                <i class="fa-solid fa-stopwatch me-1"></i> Daily Work Tracker
+            </a>
+        </div>
+    </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card p-4 border-0 shadow-sm">
-            <form method="POST">
-                {% csrf_token %}
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label small fw-semibold">From Date</label>
-                        <input type="date" name="from_date" class="form-control" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small fw-semibold">To Date</label>
-                        <input type="date" name="to_date" class="form-control" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small fw-semibold">Reason for Leave</label>
-                        <textarea name="leave_reason" class="form-control" rows="4" required placeholder="State reason for absence"></textarea>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Submit Application</button>
-                    </div>
+    <!-- Top KPI Metric Card -->
+    <div class="leave-kpi-banner">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="kpi-col-label">Full Leaves</div>
+                <div class="kpi-col-value text-primary">{{ full_leaves_count }}</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-col-label">Half Leaves</div>
+                <div class="kpi-col-value text-info">{{ half_leaves_count }}</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-col-label">Total Used (90D)</div>
+                <div class="kpi-col-value text-warning">{{ total_used }} / 6</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-col-label">Remaining Balance</div>
+                <div class="kpi-col-value text-success">{{ remaining_balance }}</div>
+            </div>
+        </div>
+        <div class="kpi-window-text">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-1"></i> {{ window_text }}
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Left: Apply Form Card -->
+        <div class="col-lg-7">
+            <div class="apply-card">
+                <div class="apply-card-title">
+                    <i class="fa-regular fa-calendar-plus text-primary"></i> Apply For Leave
                 </div>
-            </form>
+                <div class="apply-card-sub">
+                    Select date and leave type &mdash; From/To times come from your batch schedule.
+                </div>
+
+                <form method="POST" action="{% url 'leave_apply' %}" id="leaveApplyForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="leave_type" id="hiddenLeaveType" value="full_day">
+
+                    <!-- Row 1: Date & Leave Type -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-5">
+                            <label class="form-field-label">Leave Date</label>
+                            <input type="date" name="leave_date" id="leaveDateInput" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-field-label">Leave Type</label>
+                            <div class="leave-type-grid">
+                                <div class="leave-type-card active" data-type="full_day" onclick="selectLeaveType('full_day', this)">
+                                    <div class="leave-type-title">Full Day</div>
+                                    <div class="leave-type-desc">09:00 AM - 06:00 PM</div>
+                                </div>
+                                <div class="leave-type-card" data-type="half_day_morning" onclick="selectLeaveType('half_day_morning', this)">
+                                    <div class="leave-type-title">Half Day Morning</div>
+                                    <div class="leave-type-desc">09:00 AM - 01:30 PM</div>
+                                </div>
+                                <div class="leave-type-card" data-type="half_day_afternoon" onclick="selectLeaveType('half_day_afternoon', this)">
+                                    <div class="leave-type-title">Half Day Evening</div>
+                                    <div class="leave-type-desc">01:30 PM - 06:00 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Green Gradient Duration Preview -->
+                    <div class="duration-preview-box">
+                        <div class="duration-preview-label">Leave Duration Preview &bull; Daily Corporate Schedule</div>
+                        <div class="duration-preview-time" id="previewTimeRange">09:00 AM &rarr; 06:00 PM</div>
+                        <div class="duration-preview-hrs" id="previewDurationHrs">9 hr (Full Day Shift)</div>
+                    </div>
+
+                    <!-- Row 2: Category & Billable Type -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-field-label">Category</label>
+                            <select name="category" class="form-select" required>
+                                <option value="" disabled selected>Choose...</option>
+                                <option value="Casual Leave">Casual Leave</option>
+                                <option value="Sick Leave">Sick Leave</option>
+                                <option value="Academic / Exam">Academic / College Exam</option>
+                                <option value="Personal / Emergency">Personal / Emergency</option>
+                                <option value="Festival / Family">Festival / Family Function</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-field-label">Billable Type</label>
+                            <select name="billable_type" class="form-select" required>
+                                <option value="" disabled selected>Choose...</option>
+                                <option value="Unpaid Leave">Unpaid Leave</option>
+                                <option value="Paid Leave">Paid Leave</option>
+                                <option value="Compensatory Off">Compensatory Off</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Leave Reason -->
+                    <div class="mb-4">
+                        <label class="form-field-label">Leave Reason</label>
+                        <textarea name="leave_reason" class="form-control" rows="3" placeholder="Enter reason for leave" required></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-apply-submit">
+                            <i class="fa-solid fa-paper-plane"></i> Apply Leave
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right: Batch Timing & Summary Cards -->
+        <div class="col-lg-5">
+            <!-- Batch Timing & Corporate Schedule Card -->
+            <div class="batch-timing-card">
+                <div class="batch-timing-header">
+                    <i class="fa-regular fa-clock"></i> DAILY CORPORATE SCHEDULE
+                </div>
+                <div class="batch-name-badge">{{ batch_name|default:"A2Z IT HUB Corporate" }}</div>
+                <div class="batch-hours-text">09:00 AM → 06:00 PM</div>
+                <div class="batch-timing-note">
+                    Standard Daily Corporate Schedule (09:00 AM - 06:00 PM). Full day and half day timings auto-applied.
+                </div>
+            </div>
+
+            <!-- Leave Summary Card -->
+            <div class="summary-card">
+                <div class="summary-card-title">
+                    <i class="fa-solid fa-list-check text-primary"></i> Leave Summary
+                </div>
+                <div class="summary-item">
+                    <span class="summary-item-label">Leave Date</span>
+                    <span class="summary-item-val" id="sumDate">{{ today|date:'d M Y' }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-item-label">Leave Type</span>
+                    <span class="summary-item-val" id="sumType">Full Day (9:00 AM - 6:00 PM)</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-item-label">From Time</span>
+                    <span class="summary-item-val" id="sumFrom">09:00 AM</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-item-label">To Time</span>
+                    <span class="summary-item-val" id="sumTo">06:00 PM</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-item-label">Duration</span>
+                    <span class="summary-item-val text-success" id="sumDuration">9 hr (Full Day Shift)</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- FLOATING APP LAUNCHER BUTTON -->
+<a href="{% url 'daily_work_messages' %}" class="floating-launcher-btn" title="Daily Work Messages Tracker">
+    <i class="fa-solid fa-table-cells"></i>
+</a>
+
+<!-- MODAL: LEAVE HISTORY (Shows All Submitted Applications) -->
+<div class="modal fade" id="leaveHistoryModal" tabindex="-1" aria-labelledby="leaveHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white" style="background-color: #161938;">
+                <h6 class="modal-title fw-bold text-white mb-0" id="leaveHistoryModalLabel">
+                    <i class="fa-solid fa-clock-rotate-left text-info me-2"></i> My Leave Applications History
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead>
+                            <tr style="background-color: #161938; color: #ffffff;">
+                                <th style="background-color: #161938; color: #ffffff;">Date</th>
+                                <th style="background-color: #161938; color: #ffffff;">Type</th>
+                                <th style="background-color: #161938; color: #ffffff;">Timing</th>
+                                <th style="background-color: #161938; color: #ffffff;">Category</th>
+                                <th style="background-color: #161938; color: #ffffff;">Reason</th>
+                                <th style="background-color: #161938; color: #ffffff;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in my_leaves %}
+                            <tr>
+                                <td class="fw-semibold">{{ l.from_date|date:"d M Y" }}</td>
+                                <td>
+                                    {% if l.leave_type == 'full_day' %}
+                                    <span class="badge bg-primary-subtle text-primary border">Full Day (1.0)</span>
+                                    {% elif l.leave_type == 'half_day_morning' %}
+                                    <span class="badge bg-info-subtle text-info border">Half Day AM (0.5)</span>
+                                    {% else %}
+                                    <span class="badge bg-warning-subtle text-warning border">Half Day PM (0.5)</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ l.from_time|time:"h:i A"|default:"09:00 AM" }} &rarr; {{ l.to_time|time:"h:i A"|default:"06:00 PM" }}
+                                    <small class="text-muted">({{ l.duration_hours|default:"9.0" }} hr)</small>
+                                </td>
+                                <td>{{ l.category|default:"Casual" }}</td>
+                                <td style="max-width: 220px;">{{ l.leave_reason|truncatechars:40 }}</td>
+                                <td>
+                                    {% if l.approval_status == 'approved' %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Approved</span>
+                                    {% elif l.approval_status == 'rejected' %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i> Rejected</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-hourglass-half me-1"></i> Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No leave requests submitted yet. Use the form to apply.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const timings = {
+        'full_day': {
+            'timeRange': '09:00 AM → 06:00 PM',
+            'duration': '9 hr (Full Day Shift)',
+            'from': '09:00 AM',
+            'to': '06:00 PM',
+            'display': 'Full Day (9:00 AM - 6:00 PM)'
+        },
+        'half_day_morning': {
+            'timeRange': '09:00 AM → 01:30 PM',
+            'duration': '4.5 hr (Morning Half)',
+            'from': '09:00 AM',
+            'to': '01:30 PM',
+            'display': 'Half Day Morning (9:00 AM - 1:30 PM)'
+        },
+        'half_day_afternoon': {
+            'timeRange': '01:30 PM → 06:00 PM',
+            'duration': '4.5 hr (Evening Half)',
+            'from': '01:30 PM',
+            'to': '06:00 PM',
+            'display': 'Half Day Evening (1:30 PM - 6:00 PM)'
+        }
+    };
+
+    function selectLeaveType(type, element) {
+        document.querySelectorAll('.leave-type-card').forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
+        document.getElementById('hiddenLeaveType').value = type;
+
+        const info = timings[type] || timings['full_day'];
+        document.getElementById('previewTimeRange').textContent = info.timeRange;
+        document.getElementById('previewDurationHrs').textContent = info.duration;
+        document.getElementById('sumType').textContent = info.display;
+        document.getElementById('sumFrom').textContent = info.from;
+        document.getElementById('sumTo').textContent = info.to;
+        document.getElementById('sumDuration').textContent = info.duration;
+    }
+
+    // Dynamic date update for summary card
+    const dateInput = document.getElementById('leaveDateInput');
+    if (dateInput) {
+        dateInput.addEventListener('change', function () {
+            if (this.value) {
+                const parts = this.value.split('-');
+                if (parts.length === 3) {
+                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+                    document.getElementById('sumDate').textContent = d.toLocaleDateString('en-GB', options);
+                }
+            }
+        });
+    }
+</script>
 {% endblock %}

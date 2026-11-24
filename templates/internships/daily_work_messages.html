@@ -83,29 +83,44 @@
         padding-left: 24px !important;
     }
 
-    /* Cyan pill badge for start/end times */
+    /* Badges */
     .time-badge-cyan {
         background-color: #00b4d8;
         color: #ffffff;
         font-weight: 700;
         font-size: 0.92rem;
-        padding: 6px 30px;
-        border-radius: 8px;
+        padding: 6px 28px;
+        border-radius: 7px;
         display: inline-block;
         min-width: 115px;
         text-align: center;
         letter-spacing: 0.3px;
-        box-shadow: 0 2px 6px rgba(0, 180, 216, 0.25);
+        box-shadow: 0 2px 6px rgba(0, 180, 216, 0.2);
     }
+    /* Yellow/Amber pill badge for Lunch break */
+    .time-badge-yellow {
+        background-color: #ffc107;
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 0.92rem;
+        padding: 6px 28px;
+        border-radius: 7px;
+        display: inline-block;
+        min-width: 115px;
+        text-align: center;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 6px rgba(255, 193, 7, 0.2);
+    }
+    /* Dark pill badge for Work Stop start time */
     .time-badge-dark {
         background-color: #121434;
         color: #ffffff;
         font-weight: 700;
         font-size: 0.92rem;
-        padding: 6px 26px;
-        border-radius: 8px;
+        padding: 6px 28px;
+        border-radius: 7px;
         display: inline-block;
-        min-width: 105px;
+        min-width: 115px;
         text-align: center;
         letter-spacing: 0.3px;
     }
@@ -116,15 +131,15 @@
 
     /* Outline buttons matching screenshot */
     .btn-break-outline {
-        border: 1.5px solid #38bdf8;
-        color: #0284c7;
+        border: 1.5px solid #00b4d8;
+        color: #0096c7;
         background-color: #ffffff;
         border-radius: 7px;
         font-weight: 600;
-        font-size: 0.92rem;
+        font-size: 0.93rem;
         padding: 7px 18px;
         width: 100%;
-        max-width: 360px;
+        max-width: 380px;
         transition: all 0.2s ease;
         text-align: center;
         display: inline-flex;
@@ -135,8 +150,8 @@
     }
     .btn-break-outline:hover {
         background-color: #f0f9ff;
-        border-color: #0284c7;
-        color: #0369a1;
+        border-color: #0096c7;
+        color: #0077b6;
     }
 
     .btn-break-danger-outline {
@@ -145,10 +160,10 @@
         background-color: #ffffff;
         border-radius: 7px;
         font-weight: 600;
-        font-size: 0.92rem;
+        font-size: 0.93rem;
         padding: 7px 18px;
         width: 100%;
-        max-width: 360px;
+        max-width: 380px;
         transition: all 0.2s ease;
         text-align: center;
         display: inline-flex;
@@ -164,15 +179,15 @@
     }
 
     .btn-work-stop-outline {
-        border: 1.5px solid #1e293b;
-        color: #1e293b;
+        border: 1.5px solid #181838;
+        color: #181838;
         background-color: #ffffff;
         border-radius: 7px;
         font-weight: 600;
-        font-size: 0.92rem;
+        font-size: 0.93rem;
         padding: 7px 18px;
         width: 100%;
-        max-width: 360px;
+        max-width: 380px;
         transition: all 0.2s ease;
         text-align: center;
         display: inline-flex;
@@ -183,17 +198,17 @@
         text-decoration: none;
     }
     .btn-work-stop-outline:hover {
-        background-color: #0f172a;
+        background-color: #181838;
         color: #ffffff;
     }
 
     .btn-photo-preview {
-        border: 1.5px solid #22c55e;
-        color: #16a34a;
+        border: 1.5px solid #10b981;
+        color: #10b981;
         background-color: #ffffff;
         border-radius: 6px;
         padding: 4px 10px;
-        font-size: 0.95rem;
+        font-size: 1rem;
         transition: all 0.2s ease;
         cursor: pointer;
         display: inline-flex;
@@ -201,7 +216,7 @@
         justify-content: center;
     }
     .btn-photo-preview:hover {
-        background-color: #22c55e;
+        background-color: #10b981;
         color: #ffffff;
     }
 
@@ -247,26 +262,73 @@
             </div>
         </div>
 
-        {% if is_staff %}
-        <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded-3 border shadow-sm">
-            <form method="GET" class="d-flex align-items-center gap-2 mb-0">
-                <label for="student-select" class="small text-muted fw-semibold mb-0"><i class="fa-solid fa-user me-1 text-primary"></i>Student:</label>
-                <select id="student-select" name="student_id" class="form-select form-select-sm" style="min-width: 160px;" onchange="this.form.submit()">
-                    {% for s in all_students %}
-                    <option value="{{ s.id }}" {% if s.id == target_student.id %}selected{% endif %}>
-                        {{ s.get_full_name|default:s.username }} ({{ s.role|title }})
-                    </option>
-                    {% endfor %}
-                </select>
+        <div class="d-flex align-items-center gap-2">
+            {% if is_staff %}
+            <div class="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded-3 border shadow-sm">
+                <form method="GET" class="d-flex align-items-center gap-2 mb-0">
+                    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                    <label for="student-select" class="small text-muted fw-semibold mb-0"><i class="fa-solid fa-user me-1 text-primary"></i>Student:</label>
+                    <select id="student-select" name="student_id" class="form-select form-select-sm" style="min-width: 170px;" onchange="this.form.submit()">
+                        {% for s in all_students %}
+                        <option value="{{ s.id }}" {% if s.id == target_student.id %}selected{% endif %}>
+                            {{ s.get_full_name|default:s.username }} ({{ s.role|title }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <a href="{% url 'work_tracking_logs' %}" class="btn btn-sm btn-outline-secondary rounded-pill ms-2" title="View all student work logs">
+                    <i class="fa-solid fa-list-check me-1"></i> Logs
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
-                <label for="date-picker" class="small text-muted fw-semibold mb-0 ms-2"><i class="fa-regular fa-calendar me-1 text-primary"></i>Date:</label>
-                <input type="date" id="date-picker" name="date" class="form-control form-control-sm" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
-            </form>
-            <a href="{% url 'work_tracking_logs' %}" class="btn btn-sm btn-outline-secondary rounded-pill ms-2" title="View all student work logs">
-                <i class="fa-solid fa-list-check me-1"></i> Logs
+    <!-- UNIVERSAL DAILY DATE NAVIGATOR (SELECT ANY DAY OR TODAY) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 bg-white border rounded-4 shadow-sm gap-3">
+        <!-- Date Switcher Buttons -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="?date={{ prev_date|date:'Y-m-d' }}{% if is_staff and target_student %}&student_id={{ target_student.id }}{% endif %}" 
+               class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-xs" title="Previous Day">
+                <i class="fa-solid fa-chevron-left me-1"></i> {{ prev_date|date:"d M" }}
+            </a>
+
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-light rounded-pill border">
+                <i class="fa-regular fa-calendar-check text-primary"></i>
+                <strong class="text-dark">{{ selected_date|date:"l, d M Y" }}</strong>
+                {% if is_today %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill py-0 px-2" style="font-size: 0.72rem;">Today</span>
+                {% else %}
+                <a href="?date={{ today|date:'Y-m-d' }}{% if is_staff and target_student %}&student_id={{ target_student.id }}{% endif %}" 
+                   class="badge bg-primary text-white text-decoration-none rounded-pill py-1 px-2" style="font-size: 0.72rem;">
+                    Go to Today
+                </a>
+                {% endif %}
+            </div>
+
+            <a href="?date={{ next_date|date:'Y-m-d' }}{% if is_staff and target_student %}&student_id={{ target_student.id }}{% endif %}" 
+               class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-xs" title="Next Day">
+                {{ next_date|date:"d M" }} <i class="fa-solid fa-chevron-right ms-1"></i>
             </a>
         </div>
-        {% endif %}
+
+        <!-- Jump to Specific Date & Day Reset -->
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+                <label for="date-picker-main" class="small text-muted fw-semibold mb-0"><i class="fa-regular fa-calendar me-1 text-primary"></i>Pick Date:</label>
+                <input type="date" id="date-picker-main" class="form-control form-control-sm rounded-pill" value="{{ selected_date|date:'Y-m-d' }}" 
+                       onchange="location.href='?date=' + this.value + '{% if is_staff and target_student %}&student_id={{ target_student.id }}{% endif %}';">
+            </div>
+
+            <form method="POST" action="{% url 'reset_day_action' %}" onsubmit="return confirm('Reset daily messages for {{ selected_date|date:'d M Y' }} to start fresh?');" class="mb-0 ms-2">
+                {% csrf_token %}
+                <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                <input type="hidden" name="student_id" value="{{ target_student.id }}">
+                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3" title="Clear/Reset this day to test or re-punch">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Reset Day
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- MAIN TRACKING CARD (EXACT REPLICATION OF SCREENSHOT) -->
@@ -289,26 +351,38 @@
                             {% if tracking.work_start_time %}
                             <span class="time-badge-cyan">{{ tracking.work_start_time|time:"H:i" }}</span>
                             {% else %}
-                            <span class="time-badge-cyan">09:37</span>
+                            <span class="time-badge-empty"></span>
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            {% if tracking.work_expected_end_time %}
+                            {% if tracking.work_stop_time %}
+                            <span class="time-badge-cyan">{{ tracking.work_stop_time|time:"H:i" }}</span>
+                            {% elif tracking.work_expected_end_time %}
                             <span class="time-badge-cyan">{{ tracking.work_expected_end_time|time:"H:i" }}</span>
                             {% else %}
-                            <span class="time-badge-cyan">18:07</span>
+                            <span class="time-badge-empty"></span>
                             {% endif %}
                         </td>
                         <td class="text-center">
+                            {% if tracking.work_start_time %}
                             <div class="action-completed-box justify-content-center">
                                 <i class="fa-solid fa-check check-icon-green"></i>
+                                {% if tracking.work_start_photo %}
                                 <button type="button" class="btn btn-photo-preview" data-bs-toggle="modal" data-bs-target="#photoModal" 
-                                        data-photo-url="{% if tracking.work_start_photo %}{{ tracking.work_start_photo.url }}{% endif %}" 
-                                        data-photo-title="Work Start Snapshot ({{ tracking.work_start_time|time:'H:i'|default:'09:37' }})" 
+                                        data-photo-url="{{ tracking.work_start_photo.url }}" 
+                                        data-photo-title="Work Start Snapshot ({{ tracking.work_start_time|time:'H:i' }})" 
                                         title="View captured photo">
                                     <i class="fa-regular fa-image"></i>
                                 </button>
+                                {% endif %}
                             </div>
+                            {% else %}
+                            <div class="w-100 d-flex justify-content-center">
+                                <button type="button" class="btn btn-break-outline" data-bs-toggle="modal" data-bs-target="#workStartModal">
+                                    Work Start
+                                </button>
+                            </div>
+                            {% endif %}
                         </td>
                     </tr>
 
@@ -335,14 +409,14 @@
                                 <i class="fa-solid fa-ban me-1"></i> Break Skipped
                             </span>
                             {% elif not tracking.morning_tea_start %}
-                            <form method="POST" action="{% url 'break_action' 'morning_tea' 'start' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'morning_tea', 'start')">
+                            <form method="POST" action="{% url 'break_action' 'morning_tea' 'start' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'morning_tea', 'start')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
                                 <button type="submit" class="btn btn-break-outline">Tea Break Start</button>
                             </form>
                             {% elif not tracking.morning_tea_end %}
-                            <form method="POST" action="{% url 'break_action' 'morning_tea' 'stop' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'morning_tea', 'stop')">
+                            <form method="POST" action="{% url 'break_action' 'morning_tea' 'stop' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'morning_tea', 'stop')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
@@ -353,7 +427,6 @@
                             {% else %}
                             <div class="action-completed-box justify-content-center">
                                 <i class="fa-solid fa-check check-icon-green"></i>
-                                <span class="badge bg-success-subtle text-success border">Completed</span>
                             </div>
                             {% endif %}
                         </td>
@@ -364,28 +437,28 @@
                         <td class="label-cell">Lunch Break</td>
                         <td class="text-center">
                             {% if tracking.lunch_start %}
-                            <span class="time-badge-cyan">{{ tracking.lunch_start|time:"H:i" }}</span>
+                            <span class="time-badge-yellow">{{ tracking.lunch_start|time:"H:i" }}</span>
                             {% else %}
                             <span class="time-badge-empty"></span>
                             {% endif %}
                         </td>
                         <td class="text-center">
                             {% if tracking.lunch_end %}
-                            <span class="time-badge-cyan">{{ tracking.lunch_end|time:"H:i" }}</span>
+                            <span class="time-badge-yellow">{{ tracking.lunch_end|time:"H:i" }}</span>
                             {% else %}
                             <span class="time-badge-empty"></span>
                             {% endif %}
                         </td>
                         <td class="text-center">
                             {% if not tracking.lunch_start %}
-                            <form method="POST" action="{% url 'break_action' 'lunch' 'start' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'lunch', 'start')">
+                            <form method="POST" action="{% url 'break_action' 'lunch' 'start' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'lunch', 'start')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
                                 <button type="submit" class="btn btn-break-outline">Lunch Break Start</button>
                             </form>
                             {% elif not tracking.lunch_end %}
-                            <form method="POST" action="{% url 'break_action' 'lunch' 'stop' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'lunch', 'stop')">
+                            <form method="POST" action="{% url 'break_action' 'lunch' 'stop' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'lunch', 'stop')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
@@ -396,7 +469,6 @@
                             {% else %}
                             <div class="action-completed-box justify-content-center">
                                 <i class="fa-solid fa-check check-icon-green"></i>
-                                <span class="badge bg-success-subtle text-success border">Completed</span>
                             </div>
                             {% endif %}
                         </td>
@@ -425,14 +497,14 @@
                                 <i class="fa-solid fa-ban me-1"></i> Break Skipped
                             </span>
                             {% elif not tracking.evening_tea_start %}
-                            <form method="POST" action="{% url 'break_action' 'evening_tea' 'start' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'evening_tea', 'start')">
+                            <form method="POST" action="{% url 'break_action' 'evening_tea' 'start' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'evening_tea', 'start')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
                                 <button type="submit" class="btn btn-break-outline">Tea Break Start</button>
                             </form>
                             {% elif not tracking.evening_tea_end %}
-                            <form method="POST" action="{% url 'break_action' 'evening_tea' 'stop' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'evening_tea', 'stop')">
+                            <form method="POST" action="{% url 'break_action' 'evening_tea' 'stop' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'evening_tea', 'stop')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
@@ -443,7 +515,6 @@
                             {% else %}
                             <div class="action-completed-box justify-content-center">
                                 <i class="fa-solid fa-check check-icon-green"></i>
-                                <span class="badge bg-success-subtle text-success border">Completed</span>
                             </div>
                             {% endif %}
                         </td>
@@ -458,12 +529,11 @@
                             {% if tracking.no_morning_tea %}
                             <div class="action-completed-box justify-content-center">
                                 <i class="fa-solid fa-check check-icon-green"></i>
-                                <span class="badge bg-info-subtle text-info border">Recorded: No Break</span>
                             </div>
                             {% elif tracking.morning_tea_start %}
                             <span class="text-muted small fst-italic">Tea break already logged</span>
                             {% else %}
-                            <form method="POST" action="{% url 'break_action' 'morning_tea' 'skip' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'morning_tea', 'skip')">
+                            <form method="POST" action="{% url 'break_action' 'morning_tea' 'skip' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'morning_tea', 'skip')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
@@ -482,12 +552,11 @@
                             {% if tracking.no_evening_tea %}
                             <div class="action-completed-box justify-content-center">
                                 <i class="fa-solid fa-check check-icon-green"></i>
-                                <span class="badge bg-info-subtle text-info border">Recorded: No Break</span>
                             </div>
                             {% elif tracking.evening_tea_start %}
                             <span class="text-muted small fst-italic">Tea break already logged</span>
                             {% else %}
-                            <form method="POST" action="{% url 'break_action' 'evening_tea' 'skip' %}" class="d-inline w-100 break-action-form" onsubmit="return handleBreakAction(event, 'evening_tea', 'skip')">
+                            <form method="POST" action="{% url 'break_action' 'evening_tea' 'skip' %}" class="d-flex justify-content-center w-100 mb-0 break-action-form" onsubmit="return handleBreakAction(event, 'evening_tea', 'skip')">
                                 {% csrf_token %}
                                 <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
                                 <input type="hidden" name="student_id" value="{{ target_student.id }}">
@@ -504,14 +573,16 @@
                             {% if tracking.work_start_time %}
                             <span class="time-badge-dark">{{ tracking.work_start_time|time:"H:i" }}</span>
                             {% else %}
-                            <span class="time-badge-dark">09:37</span>
+                            <span class="time-badge-empty"></span>
                             {% endif %}
                         </td>
                         <td class="text-center">
                             {% if tracking.work_stop_time %}
                             <span class="time-badge-cyan">{{ tracking.work_stop_time|time:"H:i" }}</span>
-                            {% else %}
+                            {% elif tracking.work_start_time %}
                             <i class="fa-solid fa-triangle-exclamation text-danger fs-5" title="Work Stop pending"></i>
+                            {% else %}
+                            <span class="time-badge-empty"></span>
                             {% endif %}
                         </td>
                         <td class="text-center">
@@ -524,8 +595,6 @@
                                         data-photo-title="Work Stop Photo ({{ tracking.work_stop_time|time:'H:i' }})" title="View stop photo">
                                     <i class="fa-regular fa-image"></i>
                                 </button>
-                                {% else %}
-                                <span class="badge bg-danger-subtle text-danger border">Shift Ended</span>
                                 {% endif %}
                             </div>
                             {% else %}
@@ -542,13 +611,45 @@
         </div>
     </div>
 
+    <!-- DAILY WORK MESSAGE NOTE / STANDUP UPDATE BOX -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-1 text-dark">
+                    <i class="fa-solid fa-comment-dots text-primary me-2"></i>Daily Message for {{ selected_date|date:"l, d M Y" }}
+                </h5>
+                <small class="text-muted">Record or update your daily work update, tasks accomplished, or daily standup message</small>
+            </div>
+            {% if tracking.daily_message %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill">
+                <i class="fa-solid fa-circle-check me-1"></i> Daily Message Saved
+            </span>
+            {% endif %}
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+            <input type="hidden" name="student_id" value="{{ target_student.id }}">
+            <input type="hidden" name="save_daily_message" value="1">
+            <div class="mb-3">
+                <textarea name="daily_message" class="form-control" rows="3" placeholder="Enter your daily work message, standup notes, modules completed, or issues faced for {{ selected_date|date:'d M Y' }}...">{{ tracking.daily_message }}</textarea>
+            </div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <small class="text-muted"><i class="fa-solid fa-clock-rotate-left me-1"></i> Last updated: {{ tracking.updated_at|date:"d M Y, h:i A" }}</small>
+                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-semibold">
+                    <i class="fa-solid fa-paper-plane me-1"></i> Save Daily Message
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- RECENT WORK TRACKING LOGS -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
             <h6 class="fw-bold mb-0 text-dark">
                 <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Recent Work Tracking History
             </h6>
-            <span class="badge bg-light text-dark border">Last 10 Shifts</span>
+            <span class="badge bg-light text-dark border">Recent Shifts</span>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0 small">
@@ -560,14 +661,20 @@
                         <th>Lunch Break</th>
                         <th>Evening Tea</th>
                         <th>Stop Time</th>
+                        <th>Daily Message</th>
                         <th>Photos</th>
-                        <th>Remarks</th>
+                        <th class="text-end pe-3">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for h in history %}
-                    <tr>
-                        <td class="fw-bold">{{ h.date|date:"d M Y" }}</td>
+                    <tr {% if h.date == selected_date %}class="table-primary-subtle"{% endif %}>
+                        <td class="fw-bold">
+                            {{ h.date|date:"d M Y" }}
+                            {% if h.date == today %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle ms-1" style="font-size: 0.68rem;">Today</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if h.work_start_time %}
                             <span class="badge bg-info-subtle text-info border">{{ h.work_start_time|time:"H:i" }}</span>
@@ -608,6 +715,15 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if h.daily_message %}
+                            <span class="text-dark fw-semibold" title="{{ h.daily_message }}">{{ h.daily_message|truncatechars:32 }}</span>
+                            {% elif h.work_stop_remarks %}
+                            <span class="text-muted" title="{{ h.work_stop_remarks }}">{{ h.work_stop_remarks|truncatechars:32 }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div class="d-flex gap-1">
                                 {% if h.work_start_photo %}
                                 <a href="{{ h.work_start_photo.url }}" target="_blank" class="btn btn-sm btn-outline-success py-0 px-2" title="Start Photo"><i class="fa-solid fa-camera"></i> Start</a>
@@ -617,15 +733,87 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td>{{ h.work_stop_remarks|default:"-"|truncatechars:35 }}</td>
+                        <td class="text-end pe-3">
+                            <a href="?date={{ h.date|date:'Y-m-d' }}{% if is_staff and target_student %}&student_id={{ target_student.id }}{% endif %}" 
+                               class="btn btn-sm {% if h.date == selected_date %}btn-primary text-white{% else %}btn-outline-primary{% endif %} rounded-pill py-0 px-3 fw-semibold" title="View or edit this day's messages">
+                                <i class="fa-solid fa-calendar-day me-1"></i> Open
+                            </a>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No prior tracking records found. Shift tracking active above!</td>
+                        <td colspan="9" class="text-center py-4 text-muted">No prior tracking records found. Shift tracking active above!</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: WORK START (WITH QUICK CHECKIN & OPTIONAL WEBCAM) -->
+<div class="modal fade" id="workStartModal" tabindex="-1" aria-labelledby="workStartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="workStartModalLabel">
+                    <i class="fa-solid fa-play me-2"></i> Work Start - Shift Punch-In
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopStartCamera()"></button>
+            </div>
+            <form method="POST" action="{% url 'work_start_action' %}" enctype="multipart/form-data" id="workStartForm">
+                {% csrf_token %}
+                <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                <input type="hidden" name="student_id" value="{{ target_student.id }}">
+                <input type="hidden" name="client_time" id="workStartClientTime">
+
+                <div class="modal-body">
+                    <div class="alert alert-light border d-flex align-items-center justify-content-between mb-3 py-2">
+                        <div>
+                            <div class="fw-bold text-dark small">Confirm Shift Punch-In</div>
+                            <div class="text-muted small">Date: <strong>{{ selected_date|date:"l, d M Y" }}</strong></div>
+                        </div>
+                        <span class="badge bg-primary px-3 py-2" id="currentStartClock">--:--</span>
+                    </div>
+
+                    <!-- Webcam Box (Optional) -->
+                    <div class="camera-feed-box mb-3 text-center" id="startCameraWrapper" style="display:none;">
+                        <video id="startVideo" autoplay playsinline muted></video>
+                        <canvas id="startCanvas" style="display:none;"></canvas>
+                        <img id="startPhotoPreview" style="display:none; width: 100%; height: 100%; object-fit: cover;" alt="Captured preview">
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnStartCamera" onclick="startWorkStartCamera()">
+                            <i class="fa-solid fa-video me-1"></i> Open Webcam Selfie (Optional)
+                        </button>
+                        <button type="button" class="btn btn-sm btn-info text-white" id="btnCaptureStart" onclick="captureStartSnapshot()" style="display:none;">
+                            <i class="fa-solid fa-circle-dot me-1"></i> Take Snapshot
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-warning" id="btnRetakeStart" onclick="retakeStartSnapshot()" style="display:none;">
+                            <i class="fa-solid fa-rotate-left me-1"></i> Retake
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="photo_data" id="startPhotoData">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Upload Verification Photo (Optional)</label>
+                        <input type="file" name="photo" class="form-control form-control-sm" accept="image/*">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-secondary">Today's Daily Message / Morning Plan</label>
+                        <textarea name="daily_message" class="form-control form-control-sm" rows="2" placeholder="e.g. Starting work on internship module today...">{{ tracking.daily_message }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="stopStartCamera()">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold" id="btnConfirmWorkStart">
+                        <i class="fa-solid fa-play me-1"></i> Confirm & Start Work Now
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -710,7 +898,7 @@
                     <div class="p-4 bg-light rounded-3 border d-inline-block">
                         <i class="fa-solid fa-camera text-success fs-1 mb-2"></i>
                         <h6 class="fw-bold text-dark mb-1">Shift Punch-In Verified</h6>
-                        <p class="text-muted small mb-0">Biometric desk presence verified at 09:37 AM</p>
+                        <p class="text-muted small mb-0">Biometric desk presence verified at {{ tracking.work_start_time|time:"h:i A"|default:"punch-in" }}</p>
                     </div>
                 </div>
                 <img id="photoModalImg" src="" class="img-fluid rounded shadow-sm" alt="Captured Photo" style="max-height: 480px;">
@@ -722,14 +910,20 @@
 
 {% block extra_js %}
 <script>
-    // Live clock update for checkout modal
+    // Live clock update for both checkin and checkout modals
     function updateClock() {
         const now = new Date();
         const str = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-        const el = document.getElementById('currentStopClock');
-        if (el) el.textContent = str;
-        const timeInput = document.getElementById('workStopClientTime');
-        if (timeInput) timeInput.value = str;
+        
+        const stopEl = document.getElementById('currentStopClock');
+        if (stopEl) stopEl.textContent = str;
+        const stopInput = document.getElementById('workStopClientTime');
+        if (stopInput) stopInput.value = str;
+
+        const startEl = document.getElementById('currentStartClock');
+        if (startEl) startEl.textContent = str;
+        const startInput = document.getElementById('workStartClientTime');
+        if (startInput) startInput.value = str;
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -759,44 +953,64 @@
         }
     });
 
-    // AJAX Form Submission for seamless break actions (no screen flickers)
+    // Form Submission for seamless break actions (Zero 403 errors, reliable in all browsers)
     function handleBreakAction(event, breakType, action) {
         event.preventDefault();
         const form = event.target;
-        const btn = form.querySelector('button');
+        const btn = form.querySelector('button[type="submit"]');
+
+        const now = new Date();
+        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+        let clientTimeInput = form.querySelector('input[name="client_time"]');
+        if (!clientTimeInput) {
+            clientTimeInput = document.createElement('input');
+            clientTimeInput.type = 'hidden';
+            clientTimeInput.name = 'client_time';
+            form.appendChild(clientTimeInput);
+        }
+        clientTimeInput.value = timeStr;
+
+        const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]')?.value || '';
+        const formData = new FormData(form);
+
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Updating...';
         }
 
-        const formData = new FormData(form);
-        const now = new Date();
-        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-        formData.set('client_time', timeStr);
-
         fetch(form.action, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'same-origin'
         })
         .then(response => {
             if (response.ok) {
-                return response.json();
+                window.location.reload();
+            } else {
+                if (btn) btn.disabled = false;
+                form.submit();
             }
-            throw new Error('Network error');
-        })
-        .then(data => {
-            // Immediate reload with new state
-            window.location.reload();
         })
         .catch(err => {
-            // Fallback to normal browser form submission
+            if (btn) btn.disabled = false;
             form.submit();
         });
         return false;
     }
+
+    // Work start form submission handler
+    document.getElementById('workStartForm')?.addEventListener('submit', function(e) {
+        const btn = document.getElementById('btnConfirmWorkStart');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Starting Work...';
+        }
+    });
 
     // Work stop form handler
     document.getElementById('workStopForm')?.addEventListener('submit', function(e) {
@@ -806,6 +1020,65 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Stopping Work...';
         }
     });
+
+    // WEBCAM SCRIPT FOR WORK START
+    let startStream = null;
+    function startWorkStartCamera() {
+        const wrapper = document.getElementById('startCameraWrapper');
+        const video = document.getElementById('startVideo');
+        wrapper.style.display = 'block';
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+                .then(stream => {
+                    startStream = stream;
+                    video.srcObject = stream;
+                    video.play();
+                    video.style.display = 'block';
+                    document.getElementById('startPhotoPreview').style.display = 'none';
+                    document.getElementById('btnStartCamera').style.display = 'none';
+                    document.getElementById('btnCaptureStart').style.display = 'inline-block';
+                })
+                .catch(err => {
+                    alert('Webcam access was not granted (' + err.message + '). You can still confirm Work Start without a camera.');
+                    wrapper.style.display = 'none';
+                });
+        } else {
+            alert('Your browser does not support webcam streaming. You can confirm Work Start directly.');
+            wrapper.style.display = 'none';
+        }
+    }
+
+    function captureStartSnapshot() {
+        const video = document.getElementById('startVideo');
+        const canvas = document.getElementById('startCanvas');
+        const preview = document.getElementById('startPhotoPreview');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        document.getElementById('startPhotoData').value = dataUrl;
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+        video.style.display = 'none';
+        document.getElementById('btnCaptureStart').style.display = 'none';
+        document.getElementById('btnRetakeStart').style.display = 'inline-block';
+        stopStartCamera();
+    }
+
+    function retakeStartSnapshot() {
+        document.getElementById('startPhotoData').value = '';
+        document.getElementById('btnRetakeStart').style.display = 'none';
+        startWorkStartCamera();
+    }
+
+    function stopStartCamera() {
+        if (startStream) {
+            startStream.getTracks().forEach(track => track.stop());
+            startStream = null;
+        }
+    }
 
     // WEBCAM SCRIPT FOR WORK STOP
     let stopStream = null;
@@ -865,5 +1138,6 @@
             stopStream = null;
         }
     }
+</script>
 </script>
 {% endblock %}

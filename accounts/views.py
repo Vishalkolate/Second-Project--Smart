@@ -1,4 +1,3 @@
-from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -16,7 +15,7 @@ from students.models import StudentProfile
 from tasks.models import Task, TaskAssignment, DailyReport
 from learning.models import Enrollment
 from examinations.models import ExamAttempt
-from payments.models import Payment, FeeInstallment
+from payments.models import Payment
 from attendance.models import Attendance
 from projects.models import ProjectMember, ProjectSubmission
 from certificates.models import Certificate
@@ -148,6 +147,7 @@ def student_dashboard_view(request):
     # NEW ATTENDANCE DATA & MONTHLY PERFORMANCE
     # ==========================================
     today_attendance = Attendance.objects.filter(student=target_user, attendance_date=today).first()
+    is_today_present = bool(today_attendance and today_attendance.status in ['present', 'late'])
 
     month_records = Attendance.objects.filter(
         student=target_user,
@@ -179,18 +179,6 @@ def student_dashboard_view(request):
     certificates = Certificate.objects.filter(student=target_user).order_by('-issue_date')[:4]
     certificates_count = Certificate.objects.filter(student=target_user).count()
 
-    # ==========================================
-    # FEES & ONLINE PAYMENTS DATA
-    # ==========================================
-    student_payments = Payment.objects.filter(student=target_user).select_related('course').order_by('-payment_date')
-    total_paid = student_payments.filter(payment_status='Success').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-    total_course_fees = sum([e.course.course_fees for e in enrollments if e.course and e.course.course_fees]) or Decimal('0.00')
-    pending_fee = max(Decimal('0.00'), total_course_fees - total_paid)
-    fee_percentage = int(round((total_paid / total_course_fees) * 100)) if total_course_fees > 0 else (100 if total_paid > 0 else 0)
-    fee_installments = FeeInstallment.objects.filter(student=target_user).select_related('course').order_by('due_date')
-    next_installment = fee_installments.filter(status__in=['Pending', 'Partially Paid', 'Overdue']).first()
-    all_courses = Course.objects.all()
-
     all_students = []
     if is_staff:
         all_students = User.objects.filter(role__in=['student', 'intern']).order_by('first_name', 'username')
@@ -199,6 +187,7 @@ def student_dashboard_view(request):
         'target_user': target_user,
         'today': today,
         'today_attendance': today_attendance,
+        'is_today_present': is_today_present,
         'present_days': present_days,
         'late_days': late_days,
         'absent_days': absent_days,
@@ -214,15 +203,6 @@ def student_dashboard_view(request):
         'project_memberships': project_memberships,
         'certificates': certificates,
         'certificates_count': certificates_count,
-        'student_payments': student_payments,
-        'recent_payments': student_payments[:5],
-        'total_paid': total_paid,
-        'total_course_fees': total_course_fees,
-        'pending_fee': pending_fee,
-        'fee_percentage': fee_percentage,
-        'fee_installments': fee_installments,
-        'next_installment': next_installment,
-        'all_courses': all_courses,
         'is_staff': is_staff,
         'all_students': all_students,
     }
@@ -249,9 +229,38 @@ def intern_dashboard_view(request):
     )
     active_enrollment = intern_enrollments.filter(completion_status='Active').first() or intern_enrollments.first()
 
-    # Daily Work Tracking & Today's Attendance
-    today_attendance = Attendance.objects.filter(student=target_user, attendance_date=today).first()
+    # Daily Work Tracking & Today's Attendance - strictly driven by Daily Work Messages
     today_tracking = DailyWorkTracking.objects.filter(student=target_user, date=today).first()
+    if today_tracking and today_tracking.work_start_time:
+        today_attendance, _ = Attendance.objects.update_or_create(
+            student=target_user,
+            attendance_date=today,
+            defaults={
+                'status': 'present',
+                'check_in': today_tracking.work_start_time,
+                'check_out': today_tracking.work_stop_time
+            }
+        )
+    else:
+        today_attendance = Attendance.objects.filter(student=target_user, attendance_date=today).first()
+
+    # Sync any DailyWorkTracking for this month to ensure month attendance counts match work messages
+    month_trackings = DailyWorkTracking.objects.filter(
+        student=target_user,
+        date__year=today.year,
+        date__month=today.month,
+        work_start_time__isnull=False
+    )
+    for mt in month_trackings:
+        Attendance.objects.update_or_create(
+            student=target_user,
+            attendance_date=mt.date,
+            defaults={
+                'status': 'present',
+                'check_in': mt.work_start_time,
+                'check_out': mt.work_stop_time
+            }
+        )
 
     month_records = Attendance.objects.filter(
         student=target_user,

@@ -110,6 +110,11 @@ class LeaveRequest(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
+    LEAVE_TYPE_CHOICES = [
+        ('full_day', 'Full Day'),
+        ('half_day_morning', 'Half Day Morning'),
+        ('half_day_afternoon', 'Half Day Afternoon'),
+    ]
 
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -118,6 +123,17 @@ class LeaveRequest(models.Model):
     )
     from_date = models.DateField()
     to_date = models.DateField()
+    leave_type = models.CharField(
+        max_length=30,
+        choices=LEAVE_TYPE_CHOICES,
+        default='full_day'
+    )
+    category = models.CharField(max_length=50, default='Casual Leave', blank=True)
+    billable_type = models.CharField(max_length=50, default='Unpaid Leave', blank=True)
+    from_time = models.TimeField(null=True, blank=True)
+    to_time = models.TimeField(null=True, blank=True)
+    duration_hours = models.DecimalField(max_digits=4, decimal_places=1, default=9.0)
+    leave_value = models.DecimalField(max_digits=3, decimal_places=1, default=1.0)
     leave_reason = models.TextField()
     approval_status = models.CharField(
         max_length=20,
@@ -138,4 +154,4 @@ class LeaveRequest(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.student.username} ({self.from_date} to {self.to_date}) - {self.approval_status}"
+        return f"{self.student.username} ({self.from_date} - {self.get_leave_type_display()}) - {self.approval_status}"
